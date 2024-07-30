@@ -1,7 +1,7 @@
-use std::fs;
 use std::path::Path;
+use std::{fs, ops::Not};
 
-use clap::{arg, Command};
+use clap::{arg, Arg, ArgAction, Command};
 use git2::Repository;
 
 fn cli() -> Command {
@@ -13,7 +13,13 @@ fn cli() -> Command {
             Command::new("new")
                 .about("Create a new plugin template.")
                 .arg(arg!(<str> "Name of the plugin."))
-                .arg_required_else_help(true),
+                .arg_required_else_help(true)
+                .arg(
+                    Arg::new("Enable Git")
+                        .long("no-git")
+                        .default_value("false")
+                        .action(ArgAction::SetTrue),
+                ),
         )
 }
 
@@ -51,7 +57,7 @@ fn init_git(path: &Path) -> Repository {
     }
 }
 
-fn create_plugin(name: &String) {
+fn create_plugin(name: &String, no_git: &bool) {
     // Setup plugin path
     let root_path = Path::new(name);
     let plugin_path = root_path.join("plugin_src");
@@ -73,7 +79,9 @@ fn create_plugin(name: &String) {
     );
 
     // Init git repo
-    init_git(root_path);
+    if no_git.not() {
+        init_git(root_path);
+    }
 }
 
 fn main() {
@@ -82,7 +90,8 @@ fn main() {
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
             let name = sub_matches.get_one::<String>("str").unwrap();
-            create_plugin(name);
+            let no_git = sub_matches.get_one::<bool>("Enable Git").unwrap();
+            create_plugin(name, no_git);
             println!(
                 "New plugin created: {}",
                 sub_matches.get_one::<String>("str").unwrap()
