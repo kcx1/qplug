@@ -2,3 +2,6 @@
 
 # Test plugin location
 /Api
+
+# Python Testing
+/.ropeproject
