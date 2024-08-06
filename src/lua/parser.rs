@@ -1,91 +1,108 @@
-use mlua::{Error, Lua, LuaSerdeExt, Result, UserData, Value};
-use serde::{Deserialize, Serialize};
-use std::fs;
-use uuid::Uuid;
+use mlua::{Lua, Table, Value};
 
-use crate::lua::info::{BuildIncrement, PluginInfo};
-
-fn get_info(path: &String) -> Result<PluginInfo> {
-    let lua = Lua::new();
-    let globals = lua.globals();
-    let info_file = fs::read_to_string(path)?;
-    lua.load(info_file.to_string()).exec()?;
-
-    let mut info: PluginInfo = lua.from_value(globals.get("PluginInfo")?).unwrap();
-    println!("{:?}", info);
-    Ok(info)
+pub fn name_table(table_name: &str, table: &str) -> String {
+    format!("{} = {}", table_name, table).to_string()
 }
 
-fn update_build_version(version: String, increment: BuildIncrement) -> String {
-    let mut ver: Vec<&str> = version.split('.').collect();
-
-    match increment {
-        BuildIncrement::Patch => {
-            let update = ver[2].parse::<i32>().unwrap_or(0) + 1;
-            let update_string = &update.to_string();
-            ver[2] = update_string;
-            ver.join(".").to_string()
-        }
-        BuildIncrement::Minor => {
-            let update = ver[1].parse::<i32>().unwrap_or(0) + 1;
-            let update_string = &update.to_string();
-            ver[1] = update_string;
-            ver[2] = "0";
-            ver.join(".").to_string()
-        }
-        BuildIncrement::Major => {
-            let update = ver[0].parse::<i32>().unwrap_or(0) + 1;
-            let update_string = &update.to_string();
-            ver[0] = update_string;
-            ver[1] = "0";
-            ver[2] = "0";
-            ver.join(".").to_string()
+pub fn serialize_table(lua: &Lua, table: &Table) -> String {
+    fn serialize_value(lua: &Lua, value: &Value) -> String {
+        match value {
+            Value::Nil => "nil".to_string(),
+            Value::Boolean(b) => b.to_string(),
+            Value::Integer(i) => i.to_string(),
+            Value::Number(n) => n.to_string(),
+            Value::String(s) => format!(r#""{}""#, s.to_str().unwrap_or("")),
+            Value::Table(t) => serialize_table(lua, t),
+            _ => "unsupported".to_string(), // Handle more types if needed
         }
     }
+
+    let mut result = String::new();
+    result.push('{');
+    table
+        .clone()
+        .pairs::<String, Value>()
+        .flatten()
+        .for_each(|(key, value)| {
+            let serialized_value = serialize_value(lua, &value);
+            result.push_str(&format!("{} = {}, ", key, serialized_value));
+        });
+
+    result.push('}');
+    result = result.replace(", }", "}");
+    result
 }
 
-fn update_info(mut info: PluginInfo, increment: BuildIncrement) -> Result<PluginInfo> {
-    info.Id = Uuid::new_v4().to_string();
-    info.BuildVersion = update_build_version(info.BuildVersion, increment);
-
-    Ok(info)
-}
 #[cfg(test)]
 mod tests {
+
     use super::*;
+    use mlua::{Lua, Table, Value};
+
     #[test]
-    fn test_get_info() {
-        get_info(&"./Api/plugin_src/info.lua".to_string()).unwrap();
+    fn test_serialize_simple_table() {
+        let lua = Lua::new();
+        let table = lua.create_table().unwrap();
+        table.set("key1", "value1").unwrap();
+        table.set("key2", 42).unwrap();
+        table.set("key3", true).unwrap();
+
+        let serialized = name_table("my_table", &serialize_table(&lua, &table));
+
+        let expected = r#"my_table = {key1 = "value1", key2 = 42, key3 = true}"#;
+        assert_eq!(&serialized, expected);
     }
+
     #[test]
-    fn test_update_major_build_number() {
-        let updated = update_build_version("1.0.0".to_string(), BuildIncrement::Major);
-        let control = "2.0.0".to_string();
-        assert_eq!(updated, control);
+    fn test_serialize_nested_table() {
+        let lua = Lua::new();
+        let table = lua.create_table().unwrap();
+        let nested_table = lua.create_table().unwrap();
+        nested_table.set("nested_key", "nested_value").unwrap();
+        table.set("nested_table", nested_table).unwrap();
+
+        let serialized = name_table("my_table", &serialize_table(&lua, &table));
+
+        let expected = r#"my_table = {nested_table = {nested_key = "nested_value"}}"#;
+        assert_eq!(&serialized, expected);
     }
+
     #[test]
-    fn test_update_minor_build_number() {
-        let updated = update_build_version("1.0.0".to_string(), BuildIncrement::Minor);
-        let control = "1.1.0".to_string();
-        assert_eq!(updated, control);
+    fn test_serialize_empty_table() {
+        let lua = Lua::new();
+        let table = lua.create_table().unwrap();
+
+        let serialized = name_table("serialized", &serialize_table(&lua, &table));
+
+        assert_eq!(&serialized, "serialized = {}");
     }
+
     #[test]
-    fn test_update_patch_build_number() {
-        let updated = update_build_version("1.0.0".to_string(), BuildIncrement::Patch);
-        let control = "1.0.1".to_string();
-        assert_eq!(updated, control);
+    fn test_serialize_table_with_nil() {
+        let lua = Lua::new();
+        let table = lua.create_table().unwrap();
+        table.set("key", Value::Nil).unwrap();
+
+        let serialized = name_table("table_with_nil", &serialize_table(&lua, &table));
+
+        let expected = "table_with_nil = {}";
+        assert_eq!(&serialized, expected);
     }
+
     #[test]
-    fn test_update_patch_build_number_with_big_number() {
-        let updated = update_build_version("1.0.999".to_string(), BuildIncrement::Patch);
-        let control = "1.0.1000".to_string();
-        assert_eq!(updated, control);
-    }
-    #[test]
-    fn test_update_info() {
-        let info = get_info(&"./Api/plugin_src/info.lua".to_string()).unwrap();
-        let updated = update_info(info.to_owned(), BuildIncrement::Patch).unwrap();
-        assert_ne!(&updated.BuildVersion, &info.BuildVersion);
-        assert_ne!(&updated.Id, &info.Id);
+    fn test_serialize_table_with_unsupported_value() {
+        let lua = Lua::new();
+        let table = lua.create_table().unwrap();
+        table
+            .set(
+                "function_key",
+                lua.create_function(|_, _: ()| Ok(())).unwrap(),
+            )
+            .unwrap();
+
+        let serialized = name_table("table_with_function", &serialize_table(&lua, &table));
+
+        let expected = "table_with_function = {function_key = unsupported}";
+        assert_eq!(&serialized, expected);
     }
 }

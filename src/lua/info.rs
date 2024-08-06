@@ -1,7 +1,10 @@
-use mlua::UserData;
-use uuid::Uuid;
+use mlua::{Lua, LuaSerdeExt, Result, Table, UserData};
 
 use serde::{Deserialize, Serialize};
+use std::fs;
+use uuid::Uuid;
+
+use super::parser::{self, name_table};
 
 pub enum BuildIncrement {
     Patch = 2,
@@ -11,12 +14,150 @@ pub enum BuildIncrement {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PluginInfo {
-    pub Name: String,
-    pub Version: String,
-    pub BuildVersion: String,
-    pub Id: String,
-    pub Author: String,
-    pub Description: String,
+    #[serde(rename = "Name")]
+    pub name: String,
+    #[serde(rename = "Version")]
+    pub version: String,
+    #[serde(rename = "BuildVersion")]
+    pub build_version: String,
+    #[serde(rename = "Id")]
+    pub id: String,
+    #[serde(rename = "Author")]
+    pub author: String,
+    #[serde(rename = "Description")]
+    pub description: String,
 }
 
 impl UserData for PluginInfo {}
+
+impl IntoIterator for PluginInfo {
+    type Item = (String, String);
+    type IntoIter = std::array::IntoIter<(String, String), 6>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIterator::into_iter([
+            ("Name".to_string(), self.name),
+            ("Version".to_string(), self.version),
+            ("Build_version".to_string(), self.build_version),
+            ("Id".to_string(), self.id),
+            ("Author".to_string(), self.author),
+            ("Description".to_string(), self.description),
+        ])
+    }
+}
+
+impl PluginInfo {
+    pub fn get_struct(path: &String, lua: &Lua) -> Result<PluginInfo> {
+        let globals = lua.globals();
+        let info_file = fs::read_to_string(path)?;
+        lua.load(info_file.to_string()).exec()?;
+
+        let info: PluginInfo = lua.from_value(globals.get("PluginInfo")?).unwrap();
+        Ok(info)
+    }
+
+    pub fn get_table(self, lua: &Lua) -> Table {
+        let table = lua.create_table().unwrap();
+        for pairs in self.into_iter() {
+            let (k, v) = pairs;
+            table.set(k, v).unwrap();
+        }
+        table
+    }
+
+    pub fn update(mut self, increment: BuildIncrement) -> Result<PluginInfo> {
+        self.id = Uuid::new_v4().to_string();
+        self.build_version = PluginInfo::update_build_version(self.build_version, increment);
+
+        Ok(self)
+    }
+
+    pub fn write(self, table: Table, path: &str, lua: &Lua) -> Result<()> {
+        let table = parser::serialize_table(lua, &table);
+        let contents = name_table("PluginInfo", &table);
+
+        Ok(fs::write(path, contents)?)
+    }
+
+    pub fn update_build_version(version: String, increment: BuildIncrement) -> String {
+        let mut ver: Vec<&str> = version.split('.').collect();
+
+        match increment {
+            BuildIncrement::Patch => {
+                let update = ver[2].parse::<i32>().unwrap_or(0) + 1;
+                let update_string = &update.to_string();
+                ver[2] = update_string;
+                ver.join(".").to_string()
+            }
+            BuildIncrement::Minor => {
+                let update = ver[1].parse::<i32>().unwrap_or(0) + 1;
+                let update_string = &update.to_string();
+                ver[1] = update_string;
+                ver[2] = "0";
+                ver.join(".").to_string()
+            }
+            BuildIncrement::Major => {
+                let update = ver[0].parse::<i32>().unwrap_or(0) + 1;
+                let update_string = &update.to_string();
+                ver[0] = update_string;
+                ver[1] = "0";
+                ver[2] = "0";
+                ver.join(".").to_string()
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    #[test]
+    fn test_get_info() {
+        let lua = Lua::new();
+        PluginInfo::get_struct(&"./Api/plugin_src/info.lua".to_string(), &lua).unwrap();
+    }
+    #[test]
+    fn test_update_major_build_number() {
+        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Major);
+        let control = "2.0.0".to_string();
+        assert_eq!(updated, control);
+    }
+    #[test]
+    fn test_update_minor_build_number() {
+        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Minor);
+        let control = "1.1.0".to_string();
+        assert_eq!(updated, control);
+    }
+    #[test]
+    fn test_update_patch_build_number() {
+        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Patch);
+        let control = "1.0.1".to_string();
+        assert_eq!(updated, control);
+    }
+    #[test]
+    fn test_update_patch_build_number_with_big_number() {
+        let updated =
+            PluginInfo::update_build_version("1.0.999".to_string(), BuildIncrement::Patch);
+        let control = "1.0.1000".to_string();
+        assert_eq!(updated, control);
+    }
+    #[test]
+    fn test_update_info() {
+        let lua = Lua::new();
+        let info = PluginInfo::get_struct(&"./Api/plugin_src/info.lua".to_string(), &lua).unwrap();
+        let updated = info.clone().update(BuildIncrement::Patch).unwrap();
+
+        assert_ne!(&updated.build_version, &info.build_version);
+        assert_ne!(&updated.id, &info.id);
+    }
+    #[test]
+    fn test_write_info() {
+        let lua = Lua::new();
+        let info_path = "./Api/plugin_src/info.lua";
+        let info = PluginInfo::get_struct(&info_path.to_string(), &lua).unwrap();
+        info.clone()
+            .write(info.get_table(&lua), "./Api/plugin_src/test_info.lua", &lua)
+            .unwrap();
+    }
+}
