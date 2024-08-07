@@ -1,4 +1,10 @@
-use std::{fs, io, ops::Not, path::Path, process::exit};
+use std::{
+    fs,
+    io::{self, Write},
+    ops::Not,
+    path::Path,
+    process::exit,
+};
 
 use git2::Repository;
 use mlua::Lua;
@@ -60,6 +66,7 @@ fn get_user_info(name: &String, config: Option<PluginInfo>) -> PluginInfo {
         Some(config) => config,
         None => {
             // Author Name
+            io::stdout().flush().unwrap();
             let mut author = String::new();
             println!("Enter your name: ");
             io::stdin()
@@ -67,6 +74,7 @@ fn get_user_info(name: &String, config: Option<PluginInfo>) -> PluginInfo {
                 .expect("Oops, Could not read your name.");
 
             // Description
+            io::stdout().flush().unwrap();
             let mut description = String::new();
             println!("Enter a description for your plugin: ");
             io::stdin()
