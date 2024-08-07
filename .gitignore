@@ -5,3 +5,4 @@
 
 # Python Testing
 /.ropeproject
+/.mypy_cache

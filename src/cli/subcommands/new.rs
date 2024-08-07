@@ -43,6 +43,8 @@ pub fn create_plugin(name: &String, no_git: &bool) {
     info.clone()
         .write(info.get_table(&lua), plugin_path.join("info.lua"), &lua)
         .unwrap();
+
+    add_lua_defs(root_path);
 }
 
 fn fetch_template(path: &Path) -> Repository {
@@ -81,6 +83,17 @@ fn get_user_info(name: &String, config: Option<PluginInfo>) -> PluginInfo {
             }
         }
     }
+}
+
+fn add_lua_defs(root_path: &Path) {
+    // Add Lua Defs
+    let defs_path = root_path.join("definitions");
+    fs::create_dir(&defs_path).expect("Directory creation failed.");
+    fs::copy(
+        Path::new("./definitions/qsys_defs.lua"),
+        defs_path.join("qsys_defs.lua"),
+    )
+    .expect("Copy of file failed.");
 }
 
 fn delete_uneeded_files_and_directories(path: &Path, dirs: Vec<&str>) {
