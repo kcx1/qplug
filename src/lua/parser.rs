@@ -1,4 +1,7 @@
+use std::{fs, path::Path};
+
 use mlua::{Lua, Table, Value};
+use regex::Regex;
 
 pub fn name_table(table_name: &str, table: &str) -> String {
     format!("{} = {}", table_name, table).to_string()
@@ -33,6 +36,47 @@ pub fn serialize_table(lua: &Lua, table: &Table) -> String {
     result
 }
 
+pub fn find_lua_requirements() {}
+
+pub fn merge_lua_files() -> std::io::Result<()> {
+    let skeleton_path = "path/to/your/skeleton.lua";
+    let output_path = "path/to/your/output.lua";
+    let module_dir = "path/to/your/modules";
+
+    // Read the skeleton Lua file
+    let skeleton_content = fs::read_to_string(skeleton_path)?;
+
+    // Regex to match require statements (assumes simple pattern like require('module'))
+    let re = Regex::new(r#"require\(['"]([^'"]+)['"]\)"#).unwrap();
+
+    // Collect all unique module names from the require statements
+    let mut modules = std::collections::HashSet::new();
+    for cap in re.captures_iter(&skeleton_content) {
+        modules.insert(cap[1].to_string());
+    }
+
+    // Read each module's content and replace the require statements
+    let mut result_content = skeleton_content.clone();
+    for module in modules {
+        let module_path = Path::new(module_dir).join(format!("{}.lua", module));
+        if module_path.exists() {
+            let module_content = fs::read_to_string(module_path)?;
+            result_content =
+                result_content.replace(&format!(r#"require('{}')"#, module), &module_content);
+        } else {
+            eprintln!("Warning: Module file for '{}' not found", module);
+        }
+    }
+
+    // Write the result to a new file
+    fs::write(output_path, result_content)?;
+
+    Ok(())
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/// Tests
+//////////////////////////////////////////////////////////////////////////////////////////
 #[cfg(test)]
 mod tests {
 
