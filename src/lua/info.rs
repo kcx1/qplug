@@ -2,6 +2,7 @@ use mlua::{Lua, LuaSerdeExt, Result, Table, UserData};
 
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::PathBuf;
 use uuid::Uuid;
 
 use super::parser::{self, name_table};
@@ -47,7 +48,7 @@ impl IntoIterator for PluginInfo {
 }
 
 impl PluginInfo {
-    pub fn get_struct(path: &String, lua: &Lua) -> Result<PluginInfo> {
+    pub fn get_struct(path: &PathBuf, lua: &Lua) -> Result<PluginInfo> {
         let globals = lua.globals();
         let info_file = fs::read_to_string(path)?;
         lua.load(info_file.to_string()).exec()?;
@@ -72,7 +73,7 @@ impl PluginInfo {
         Ok(self)
     }
 
-    pub fn write(self, table: Table, path: &str, lua: &Lua) -> Result<()> {
+    pub fn write(self, table: Table, path: PathBuf, lua: &Lua) -> Result<()> {
         let table = parser::serialize_table(lua, &table);
         let contents = name_table("PluginInfo", &table);
 
@@ -110,12 +111,14 @@ impl PluginInfo {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
 
     use super::*;
     #[test]
     fn test_get_info() {
         let lua = Lua::new();
-        PluginInfo::get_struct(&"./Api/plugin_src/info.lua".to_string(), &lua).unwrap();
+        PluginInfo::get_struct(&Path::new("./Api/plugin_src/info.lua").to_path_buf(), &lua)
+            .unwrap();
     }
     #[test]
     fn test_update_major_build_number() {
@@ -145,7 +148,9 @@ mod tests {
     #[test]
     fn test_update_info() {
         let lua = Lua::new();
-        let info = PluginInfo::get_struct(&"./Api/plugin_src/info.lua".to_string(), &lua).unwrap();
+        let info =
+            PluginInfo::get_struct(&Path::new("./Api/plugin_src/info.lua").to_path_buf(), &lua)
+                .unwrap();
         let updated = info.clone().update(BuildIncrement::Patch).unwrap();
 
         assert_ne!(&updated.build_version, &info.build_version);
@@ -154,10 +159,14 @@ mod tests {
     #[test]
     fn test_write_info() {
         let lua = Lua::new();
-        let info_path = "./Api/plugin_src/info.lua";
-        let info = PluginInfo::get_struct(&info_path.to_string(), &lua).unwrap();
+        let info_path = Path::new("./Api/plugin_src/info.lua");
+        let info = PluginInfo::get_struct(&info_path.to_path_buf(), &lua).unwrap();
         info.clone()
-            .write(info.get_table(&lua), "./Api/plugin_src/test_info.lua", &lua)
+            .write(
+                info.get_table(&lua),
+                Path::new("./Api/plugin_src/test_info.lua").to_path_buf(),
+                &lua,
+            )
             .unwrap();
     }
 }
