@@ -1,4 +1,5 @@
 use clap::{arg, Arg, ArgAction, Command};
+use std::io::{self};
 
 use qplug::cli::subcommands::new::create_plugin;
 
@@ -19,6 +20,7 @@ fn cli() -> Command {
                         .action(ArgAction::SetTrue),
                 ),
         )
+        .subcommand(Command::new("test").arg(Arg::new("Test")))
 }
 
 fn main() {
@@ -29,6 +31,12 @@ fn main() {
             let name = sub_matches.get_one::<String>("str").unwrap();
             let no_git = sub_matches.get_one::<bool>("Enable Git").unwrap();
             create_plugin(name, no_git);
+        }
+        Some(("test", _)) => {
+            let mut result = String::new();
+            println!("This is a test. Please input anything.");
+            io::stdin().read_line(&mut result).unwrap();
+            println!("Here is the test result: {}", result.trim());
         }
         _ => unreachable!(),
     }
