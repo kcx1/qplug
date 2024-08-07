@@ -3,6 +3,26 @@ use std::io::{self};
 
 use qplug::cli::subcommands::new::create_plugin;
 
+enum Repo {
+    Base,
+    Example,
+    Custom,
+}
+
+impl ToString for Repo {
+    fn to_string(&self) -> String {
+        match self {
+            Repo::Base => String::from("https://github.com/qsysdev/qplug-base"),
+            Repo::Example => String::from("https://github.com/qsysdev/qplug-example"),
+            Repo::Custom => {
+                let mut custom = String::new();
+                io::stdin().read_line(&mut custom).unwrap();
+                custom
+            }
+        }
+    }
+}
+
 fn cli() -> Command {
     Command::new("qplug")
         .about("Q-Sys plugin Development tool.")
@@ -18,7 +38,8 @@ fn cli() -> Command {
                         .long("no-git")
                         .default_value("false")
                         .action(ArgAction::SetTrue),
-                ),
+                )
+                .arg(Arg::new("Specify Base Plugin").long("repo")),
         )
         .subcommand(Command::new("test").arg(Arg::new("Test")))
 }
