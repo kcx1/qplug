@@ -41,7 +41,6 @@ fn cli() -> Command {
                 )
                 .arg(Arg::new("Specify Base Plugin").long("repo")),
         )
-        .subcommand(Command::new("test").arg(Arg::new("Test")))
         // Build
         .subcommand(
             Command::new("build")
@@ -87,11 +86,6 @@ fn main() {
             let root_path = PathBuf::from(".");
             let plugin_path = root_path.join("plugin_src");
         }
-        Some(("test", _)) => {
-            let mut result = String::new();
-            println!("This is a test. Please input anything.");
-            io::stdin().read_line(&mut result).unwrap();
-            println!("Here is the test result: {}", result.trim());
         }
         _ => unreachable!(),
     }
