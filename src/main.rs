@@ -1,7 +1,12 @@
-use clap::{arg, Arg, ArgAction, Command};
-use std::io::{self};
+use clap::{arg, value_parser, Arg, ArgAction, Command, ValueEnum};
+use clap_complete::{generate, Shell};
+use mlua::Lua;
+use std::{
+    io::{self},
+    path::PathBuf,
+};
 
-use qplug::cli::subcommands::new::create_plugin;
+use qplug::{cli::subcommands::new::create_plugin, lua::parser::merge_lua_files};
 
 fn create_lua_env() -> Lua {
     Lua::new()
@@ -39,6 +44,20 @@ fn cli() -> Command {
                         .ignore_case(true),
                 ),
         )
+        //Generate shell completion
+        .subcommand(
+            Command::new("completions")
+                .hide(true)
+                .about("Generate shell completions")
+                .arg(
+                    Arg::new("shell")
+                        .value_parser(value_parser!(Shell))
+                        .help("The shell to generate completions for")
+                        .required(true),
+                ),
+        )
+}
+
 #[derive(ValueEnum, Clone, Debug)]
 #[clap(rename_all = "lower")]
 enum VersionType {
@@ -75,6 +94,10 @@ fn main() {
             let plugin_path = root_path.join("plugin_src");
             merge_lua_files(root_path, plugin_path).unwrap();
         }
+        Some(("completions", sub_matches)) => {
+            let shell = sub_matches.get_one::<Shell>("shell").unwrap();
+            let mut app = Command::new("my_cli_app");
+            generate(*shell, &mut app, "my_cli_app", &mut io::stdout());
         }
         _ => unreachable!(),
     }
