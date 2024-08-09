@@ -3,6 +3,8 @@ use std::io::{self};
 
 use qplug::cli::subcommands::new::create_plugin;
 
+fn create_lua_env() -> Lua {
+    Lua::new()
 }
 
 fn cli() -> Command {
@@ -10,6 +12,7 @@ fn cli() -> Command {
         .about("Q-Sys plugin Development tool.")
         .subcommand_required(true)
         .arg_required_else_help(true)
+        // New
         .subcommand(
             Command::new("new")
                 .about("Create a new plugin template.")
@@ -46,13 +49,16 @@ enum VersionType {
 }
 
 fn main() {
+    let lua_env = create_lua_env();
+
     let matches = cli().get_matches();
 
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
             let name = sub_matches.get_one::<String>("str").unwrap();
             let no_git = sub_matches.get_one::<bool>("Enable Git").unwrap();
-            create_plugin(name, no_git);
+            create_plugin(name, no_git, &lua_env);
+        }
         Some(("build", sub_matches)) => {
             let version = sub_matches
                 .get_one::<VersionType>("Increment Build Version")
@@ -67,6 +73,7 @@ fn main() {
             // pwd
             let root_path = PathBuf::from(".");
             let plugin_path = root_path.join("plugin_src");
+            merge_lua_files(root_path, plugin_path).unwrap();
         }
         }
         _ => unreachable!(),
