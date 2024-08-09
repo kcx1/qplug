@@ -39,7 +39,7 @@ impl IntoIterator for PluginInfo {
         IntoIterator::into_iter([
             ("Name".to_string(), self.name),
             ("Version".to_string(), self.version),
-            ("Build_version".to_string(), self.build_version),
+            ("BuildVersion".to_string(), self.build_version),
             ("Id".to_string(), self.id),
             ("Author".to_string(), self.author),
             ("Description".to_string(), self.description),
