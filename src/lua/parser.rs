@@ -1,4 +1,7 @@
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use mlua::{Lua, Table, Value};
 use regex::Regex;
@@ -7,19 +10,19 @@ pub fn name_table(table_name: &str, table: &str) -> String {
     format!("{} = {}", table_name, table).to_string()
 }
 
-pub fn serialize_table(lua: &Lua, table: &Table) -> String {
-    fn serialize_value(lua: &Lua, value: &Value) -> String {
-        match value {
-            Value::Nil => "nil".to_string(),
-            Value::Boolean(b) => b.to_string(),
-            Value::Integer(i) => i.to_string(),
-            Value::Number(n) => n.to_string(),
-            Value::String(s) => format!(r#""{}""#, s.to_str().unwrap_or("")),
-            Value::Table(t) => serialize_table(lua, t),
-            _ => "unsupported".to_string(), // Handle more types if needed
-        }
+pub fn serialize_value(lua: &Lua, value: &Value) -> String {
+    match value {
+        Value::Nil => "nil".to_string(),
+        Value::Boolean(b) => b.to_string(),
+        Value::Integer(i) => i.to_string(),
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => format!(r#""{}""#, s.to_str().unwrap_or("")),
+        Value::Table(t) => serialize_table(lua, t),
+        _ => "unsupported".to_string(), // Handle more types if needed
     }
+}
 
+pub fn serialize_table(lua: &Lua, table: &Table) -> String {
     let mut result = String::new();
     result.push('{');
     table
@@ -38,27 +41,26 @@ pub fn serialize_table(lua: &Lua, table: &Table) -> String {
 
 pub fn find_lua_requirements() {}
 
-pub fn merge_lua_files() -> std::io::Result<()> {
-    let skeleton_path = "path/to/your/skeleton.lua";
-    let output_path = "path/to/your/output.lua";
-    let module_dir = "path/to/your/modules";
+pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Result<()> {
+    let init_file = plugin_path.join("init.lua");
+    let qplug_file = root_path.join("qplug.lua");
 
     // Read the skeleton Lua file
-    let skeleton_content = fs::read_to_string(skeleton_path)?;
+    let init_content = fs::read_to_string(init_file)?;
 
     // Regex to match require statements (assumes simple pattern like require('module'))
     let re = Regex::new(r#"require\(['"]([^'"]+)['"]\)"#).unwrap();
 
     // Collect all unique module names from the require statements
     let mut modules = std::collections::HashSet::new();
-    for cap in re.captures_iter(&skeleton_content) {
-        modules.insert(cap[1].to_string());
+    for cap in re.captures_iter(&init_content) {
+        modules.insert(cap[1].to_string().replace('.', "/"));
     }
 
     // Read each module's content and replace the require statements
-    let mut result_content = skeleton_content.clone();
+    let mut result_content = init_content.clone();
     for module in modules {
-        let module_path = Path::new(module_dir).join(format!("{}.lua", module));
+        let module_path = plugin_path.join(format!("{}.lua", module));
         if module_path.exists() {
             let module_content = fs::read_to_string(module_path)?;
             result_content =
@@ -69,7 +71,7 @@ pub fn merge_lua_files() -> std::io::Result<()> {
     }
 
     // Write the result to a new file
-    fs::write(output_path, result_content)?;
+    fs::write(qplug_file, result_content)?;
 
     Ok(())
 }
@@ -93,8 +95,20 @@ mod tests {
 
         let serialized = name_table("my_table", &serialize_table(&lua, &table));
 
-        let expected = r#"my_table = {key1 = "value1", key2 = 42, key3 = true}"#;
-        assert_eq!(&serialized, expected);
+        lua.load(r#"expected_table = {key1 = "value1", key2 = 42, key3 = true}"#)
+            .exec()
+            .expect("Control table creation failed");
+        lua.load(serialized)
+            .exec()
+            .expect("Reserialized table creation failed");
+
+        let expected_table: Table = lua.globals().get("expected_table").unwrap();
+        let re_serialized: Table = lua.globals().get("my_table").unwrap();
+
+        for pair in expected_table.pairs::<Value, Value>() {
+            let (key, value) = pair.unwrap();
+            assert_eq!(value, re_serialized.get(key).unwrap());
+        }
     }
 
     #[test]
