@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::lua::info::PluginInfo;
 
-pub fn create_plugin(name: &String, no_git: &bool) {
+pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua) {
     // Setup plugin path
     let root_path = Path::new(name);
     let plugin_path = root_path.join("plugin_src");
@@ -44,10 +44,9 @@ pub fn create_plugin(name: &String, no_git: &bool) {
     }
     println!("New plugin created: {}", name);
 
-    let lua = Lua::new();
     let info = get_user_info(name, None);
     info.clone()
-        .write(info.get_table(&lua), plugin_path.join("info.lua"), &lua)
+        .write(info.get_table(lua), plugin_path.join("info.lua"), lua)
         .unwrap();
 
     add_lua_defs(root_path);
