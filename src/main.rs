@@ -80,19 +80,9 @@ fn main() {
         }
         Some(("build", sub_matches)) => {
             let version = sub_matches
-                .get_one::<VersionType>("Increment Build Version")
+                .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
-            match version {
-                VersionType::Major => println!("major"),
-                VersionType::Minor => println!("minor"),
-                VersionType::Patch => println!("patch"),
-                VersionType::Dev => println!("dev"),
-            }
-            // TODO: Figure out some magic to know where project root is in relationship to user's
-            // pwd
-            let root_path = PathBuf::from(".");
-            let plugin_path = root_path.join("plugin_src");
-            merge_lua_files(root_path, plugin_path).unwrap();
+            todo!("Use build command from config")
         }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
