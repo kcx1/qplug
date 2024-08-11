@@ -1,5 +1,5 @@
 ----@meta
----[[
+--[[
  * QSYS Lua Extension
  *
  * Copyright (c) Fabio Feliciosi
@@ -23,8 +23,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  
- ]]---
+ ]]
 
+--[[
+     If you like my work feel free to contact me via email: fabio.freelance.boss@gmail.com
+     Please consider donating for more work and projects: https://www.paypal.com/donate?hosted_button_id=7RTFJYWREF8PW&source=url
+ ]]
 
 ---Component object
 Component = {}
@@ -33,59 +37,56 @@ Component = {}
 function Component:New() end
 ---Create a Named Component reference in your script by name referecene
 function Component:New(Name)
-    Component = Name
+	Component = Name
 end
 ---Returns a table of all controls in the specified Named Component.
 function Component:GetControls() end
 
 ---Create a Control IO object
-Controls =
-{
-    ---Rappresent an input
-    Inputs =
-    {
-        [1] = {
-            ---Floating point value of control. If you pass in a Boolean ( like Controls.Outputs[1].Value = true ) it is converted to either a 0 ( false ) or 1 ( true ).
-            Value = 0,
-            ---Table of floating point values of controls. Only used when connected to controls that create tables of values such as the 2D panner, RTA - Band-Pass or Responsalyzer, Meters.
-            Values = {},
-            ---floating point position which goes from 0.0 -> 1.0 
-            Position = 0,
-            ---Control input string
-            String = "",
-            ---returns true if the position of the control is >0.5
-            Boolean = false,
-            ---index of control.
-            Index = 1,
-        }
-    },
-    ---Rappresent an output
-    Outputs =
-    {
-        [1] = {
-            ---floating point value of control 
-            Value = 0,
-            ---floating point position which goes from 0.0 -> 1.0 
-            Position = 0,
-            ---string representation of control value 
-            String = "",
-            ---defaults to 0 seconds
-            RampTime = 0,
-            ---index of control 
-            Index = 1,
-            ---string representing the Legend of a button or a fader.
-            Legend = ""
-        }
-    },
+Controls = {
+	---Rappresent an input
+	Inputs = {
+		[1] = {
+			---Floating point value of control. If you pass in a Boolean ( like Controls.Outputs[1].Value = true ) it is converted to either a 0 ( false ) or 1 ( true ).
+			Value = 0,
+			---Table of floating point values of controls. Only used when connected to controls that create tables of values such as the 2D panner, RTA - Band-Pass or Responsalyzer, Meters.
+			Values = {},
+			---floating point position which goes from 0.0 -> 1.0
+			Position = 0,
+			---Control input string
+			String = "",
+			---returns true if the position of the control is >0.5
+			Boolean = false,
+			---index of control.
+			Index = 1,
+		},
+	},
+	---Rappresent an output
+	Outputs = {
+		[1] = {
+			---floating point value of control
+			Value = 0,
+			---floating point position which goes from 0.0 -> 1.0
+			Position = 0,
+			---string representation of control value
+			String = "",
+			---defaults to 0 seconds
+			RampTime = 0,
+			---index of control
+			Index = 1,
+			---string representing the Legend of a button or a fader.
+			Legend = "",
+		},
+	},
 
-    IsInvisible = false,
-    IsDisabled = false,
-    IsIndeterminate = false,
-    ---Set the control color
-    Color = "",
-    ---List of choices for a control 
-    Choices = {},
-    Legend = ""
+	IsInvisible = false,
+	IsDisabled = false,
+	IsIndeterminate = false,
+	---Set the control color
+	Color = "",
+	---List of choices for a control
+	Choices = {},
+	Legend = "",
 }
 
 ---called when input value changes
@@ -95,9 +96,8 @@ function Controls.Outputs.Trigger() end
 
 ---Channel group
 ---Used when a Control Script is located inside a Channel Group.  The .Index property is used to determine which Channel Group is currently selected.
-ChannelGroup = 
-{
-    Index = 1
+ChannelGroup = {
+	Index = 1,
 }
 
 ---Crypto object used to encode and decode ASCII text strings to and from Base64, as well as obtain CRC16, HMAC, and MD5 values for specified strings.
@@ -107,7 +107,7 @@ Crypto = {}
 ---
 ---value : The value, enclosed within quotes, to encode to Base64
 ---pad : (Optional) Replace with true | false. If true, output is padded with '=' signs. The default is true.
-function Crypto.Base64Encode( value , pad ) end
+function Crypto.Base64Encode(value, pad) end
 
 ---Convert the Base64 of a specified value to a string.
 ---
@@ -132,31 +132,29 @@ function Crypto.Digest(algorithm, data) end
 ---data : The data for which to compute the message authentication code, enclosed within quotes.
 function Crypto.HMAC(algorithm, key, data) end
 
----Compute the MD5 hash of a specified value. 
+---Compute the MD5 hash of a specified value.
 ---!PLEASE NOTE THAT FOR MODERN SYSTEM MD5 ENCRYPTION IS NO MORE SECURE!
 ---value : The value for which to compute the MD5 hash.
 function Crypto.MD5Compute(value) end
 
 ---Use the Design functions to return design status and inventory information.
 Design = {
-    DesignName = "",
-    Platform = "",
-    IsRedundant = false,
-    DesignCode = "",
-    Inventory = {
-        [1] = 
-        {
-            Type = "",
-            Name = "",
-            Location = "",
-            Model = "",
-            Status =
-            {
-                Message = "",
-                Code = 1,
-            }
-        }
-    }
+	DesignName = "",
+	Platform = "",
+	IsRedundant = false,
+	DesignCode = "",
+	Inventory = {
+		[1] = {
+			Type = "",
+			Name = "",
+			Location = "",
+			Model = "",
+			Status = {
+				Message = "",
+				Code = 1,
+			},
+		},
+	},
 }
 
 ---Return a status table containing design information.
@@ -182,19 +180,18 @@ function dir.create(path) end
 ---Note: The folder you are removing must be empty. See the Example section for an iterative method to remove files before removing the folder.
 function dir.remove() end
 
-
 ---Similar to the E-mailer component, the Email library allows creation of emails directly from a Lua script.
 ---Note: Messages can be a maximum of 16 KB in size.
 Email = {}
 
 EmailSendTable = {
-    From = "",
-    Subject = "",
-    Body = "",
-    To = {},
-    CC = {},
-    Server = "",
-    Password = "",
+	From = "",
+	Subject = "",
+	Body = "",
+	To = {},
+	CC = {},
+	Server = "",
+	Password = "",
 }
 
 ---Send an email using specified parameters.
@@ -202,21 +199,21 @@ EmailSendTable = {
 function Email.Send(table) end
 
 ---function to call with status, signature is:
----'function( table, error ),' 
----table : is the table passed into Send 
+---'function( table, error ),'
+---table : is the table passed into Send
 ---error : is a string (if error occurred) or nil.
 function EmailSendTable.EventHandler(table, error) end
 
----Use the methods to add URL references to your Lua script. 
+---Use the methods to add URL references to your Lua script.
 ---Transfer data over a secure HTTP connection, or encode and decode a URL, parameters, and string data into a valid ASCII format without spaces.
 HttpClient = {}
 
 HttpDataTable = {
-    Url = "",
-    Headers = {},
-    User = "",
-    Password = "",
-    Timeout = "",
+	Url = "",
+	Headers = {},
+	User = "",
+	Password = "",
+	Timeout = "",
 }
 
 ---EventHandler to call with status.
@@ -226,10 +223,10 @@ function HttpDataTable.EventHandler(table, code, data, error, headers) end
 
 ---A comma-separated list of parameters containing, at minimum, a URL name. Optionally specify a port, path, and query.
 UrlTable = {
-    Host = "",
-    Port = 80,
-    Path = "",
-    Query = ""
+	Host = "",
+	Port = 80,
+	Path = "",
+	Query = "",
 }
 
 ---Specify a URL from which to download data.
@@ -238,12 +235,11 @@ function HttpClient.Download(table) end
 
 ---Specify a URL to which to upload data.
 ---table : A comma-separated list of parameters, use the HttpDataTable  as helper for parameters
-function HttpClient.Upload( table ) end
+function HttpClient.Upload(table) end
 
 ---Combine URL components into a complete encoded URL string.
 ---table : A comma-separated list of parameters containing, at minimum, a URL name. See UrlTable as helper
 function HttpClient.CreateUrl() end
-
 
 ---Specify a comma-separated list of parameters to encode.
 ---The output are the encoded parameter in HTML, example: { ["name with space"] = "blue" } will return: 'name%20with%20space=blue'
@@ -266,319 +262,243 @@ json = {}
 ---Returns the Lua object JSON encoded into a string.
 ---lua_object: any lua object
 ---DON'T FORGET TO ADD require("json") IN THE SCRIPT
-function json.encode(lua_object)
-    
-end
+function json.encode(lua_object) end
 
 ---Decodes the JSON encoded data structure, and returns a Lua object with the appropriate data.
 ---json_string : a JSON string
 ---DON'T FORGET TO ADD require("json") IN THE SCRIPT
-function json.decode( json_string )
-    
-end
+function json.decode(json_string) end
 
 ---Returns a unique value that will be encoded as a null in a JSON encoding.
 ---DON'T FORGET TO ADD require("json") IN THE SCRIPT
-function json.null()
-    
-end
+function json.null() end
 
 ---The Log object is used to write messages to the Core's system log file.
 Log = {
-    Message = "",
-    Error = ""
+	Message = "",
+	Error = "",
 }
 
----Mixer objects allow access to Mixer components that have been named in the design. 
----To create a mixer object, call Mixer.New( mixerName ). 
----The mixer object uses a string specification to determine which inputs and outputs to apply changes to. 
----The syntax supports either space or comma separated numbers, ranges of numbers or all (*). 
+---Mixer objects allow access to Mixer components that have been named in the design.
+---To create a mixer object, call Mixer.New( mixerName ).
+---The mixer object uses a string specification to determine which inputs and outputs to apply changes to.
+---The syntax supports either space or comma separated numbers, ranges of numbers or all (*).
 ---It supports negation of selection with the '!' operator.
-Mixer = 
-{
-    mixerName = ""
+Mixer = {
+	mixerName = "",
 }
 
 ---Create a new Mixer Object
-function Mixer:New( mixerName ) end
+function Mixer:New(mixerName) end
 
 ---Sets specified cross point gains with optional ramp time.
 ---ins : list of input
 ---outs : list of output
 ---gains : Gain value to set
----ramp : optional ramp time to get get to the selected value  
-function SetCrossPointGain(ins, outs, gain, ramp)
-    
-end
+---ramp : optional ramp time to get get to the selected value
+function SetCrossPointGain(ins, outs, gain, ramp) end
 
 ---Sets specified cross point mutes with boolean
 ---ins : list of input
 ---outs : list of output
 ---mute : boolean value for mute
-function SetCrossPointMute(ins, outs, mute)
-    
-end
+function SetCrossPointMute(ins, outs, mute) end
 
 ---Sets specified cross point solos with boolean
 ---ins : list of input
 ---outs : list of output
 ---mute : boolean value for mute
-function SetCrossPointSolo(ins, outs, mute)
-    
-end
+function SetCrossPointSolo(ins, outs, mute) end
 
 ---Sets specified cross point delay with optional ramp time
 ---ins : list of input
 ---outs : list of output
 ---delay: the delay value in milliseconds
----ramp : optional ramp time to get get to the selected value  
-function SetCrossPointDelay(ins, outs, delay, ramp)
-    
-end
+---ramp : optional ramp time to get get to the selected value
+function SetCrossPointDelay(ins, outs, delay, ramp) end
 
 ---Sets specified input gain with optional ramp time
 ---ins : list of input
 ---gains : Gain value to set
----ramp : optional ramp time to get get to the selected value  
-function SetInputGain(ins, gains, ramp)
-    
-end
+---ramp : optional ramp time to get get to the selected value
+function SetInputGain(ins, gains, ramp) end
 
 ---Sets specified input mutes
 ---ins : list of input
 ---mute : boolean value for mute
-function SetInputMute(ins, mute)
-    
-end
+function SetInputMute(ins, mute) end
 
 ---Sets specified input solos
 ---ins : list of input
 ---solo : boolean for solo
-function SetInputSolo( ins, solo)
-    
-end
+function SetInputSolo(ins, solo) end
 
 ---Sets specified output gain with optional ramp time
 ---outs : list of output
 ---gain : Gain value to set
----ramp : optional ramp time to get get to the selected value  
-function SetOutputGain(outs, gain, ramp)
-    
-end
-
+---ramp : optional ramp time to get get to the selected value
+function SetOutputGain(outs, gain, ramp) end
 
 ---Sets specified output mutes
 ---outs : list of output
 ---mute : boolean value for mute
-function SetOutputMute(outs, mute)
-    
-end
+function SetOutputMute(outs, mute) end
 
 ---Sets specified input cues enables
 ---ins : list of input
 ---cues : list of cue
 ---enable : boolean to enable/disable cue
-function SetInputCueEnable(ins, cues, enable)
-    
-end
+function SetInputCueEnable(ins, cues, enable) end
 
 ---Sets specified input AFL enables
 ---ins : list of input
 ---afls : list of AFL (After fader level)
-function SetInputCueAfl(ins, afls, enable)
-    
-end
+function SetInputCueAfl(ins, afls, enable) end
 
 ---Sets specified cue gains with optional ramp time
 ---cues : list of cue
 ---gain : Gain value to set
----ramp : optional ramp time to get to the selected value  
-function SetCueGain(cues, gain, ramp)
-    
-end
+---ramp : optional ramp time to get to the selected value
+function SetCueGain(cues, gain, ramp) end
 
 ---Sets specified cue mutes
 ---cues : list of cue
 ---mute : boolean value for mute
-function SetCueMute(cues, mute)
-    
-end
+function SetCueMute(cues, mute) end
 
 ---Gets specified cross point values
 ---ins : list of input
 ---outs : list of output
-function GetMixerCrossPoints(ins, outs)
-    
-end
+function GetMixerCrossPoints(ins, outs) end
 
----The methods in NamedControl are used to read or set the values of Named Controls. 
+---The methods in NamedControl are used to read or set the values of Named Controls.
 NamedControl = {}
 
 ---Sets control with specified Control name to specified string value. If Control name does not exist an error is raised.
 ---control_name : the name of the control
 ---string : string value to set
-function NamedControl.SetString(control_name, string)
-    
-end
+function NamedControl.SetString(control_name, string) end
 
 ---Returns string of control with specified Control name. If Control name does not exist an error is raised.
 ---control_name : the name of the control
-function NamedControl.GetString(control_name)
-    
-end
+function NamedControl.GetString(control_name) end
 
 ---Sets control with specified Control name to specified position. The ramp time is optional, and is in seconds. If Control name does not exist an error is raised.
 ---
 ---control_name : the name of the control
----position : floating point position which goes from 0.0 -> 1.0 
+---position : floating point position which goes from 0.0 -> 1.0
 ---ramp : optional ramp time to get to the selected value
-function NamedControl.SetPosition(control_name, position, ramp)
-    
-end
+function NamedControl.SetPosition(control_name, position, ramp) end
 
 ---Returns position of control with specified Control name. If Control name does not exist an error is raised.
 ---control_name : the name of the control
-function NamedControl.GetPosition(control_name)
-    
-end
+function NamedControl.GetPosition(control_name) end
 
 ---Sets control with specified Control name to specified value. The ramp time is optional, and is in seconds. If Control name does not exist an error is raised.
 ---control_name : the name of the control
----value : string representation of control value 
+---value : string representation of control value
 ---ramp : optional ramp time to get to the selected value
-function  NamedControl.SetValue(control_name, value, ramp)
-    
-end
+function NamedControl.SetValue(control_name, value, ramp) end
 
 ---Returns value of control with specified Control name. If Control name does not exist an error is raised.
 ---control_name : the name of the control
-function NamedControl.GetValue(control_name)
-    
-end
+function NamedControl.GetValue(control_name) end
 
 ---Triggers control with specified Control name. If Control name does not exist an error is raised.
 ---control_name : the name of the control
-function NamedControl.Trigger(control_name)
-    
-end
+function NamedControl.Trigger(control_name) end
 
 ---Use the Network commands to return the full host name and IP address of a specified host, or obtain a table of network interface names and their IP addresses.
 Network = {
-    name = "",
-    addresses = {},
-    interface = {
-        [1] = {
-            Interface = "",
-            Address = "",
-            MACAddress = "",
-            BroadcastAddress = "",
-            Gateway = "",
-            Netmask = ""
-        }
-    }
+	name = "",
+	addresses = {},
+	interface = {
+		[1] = {
+			Interface = "",
+			Address = "",
+			MACAddress = "",
+			BroadcastAddress = "",
+			Gateway = "",
+			Netmask = "",
+		},
+	},
 }
 
 ---Return an object with the name (.name) and addresses (.addresses) of a specified host, where .addresses is a table of strings.
 ---host : The host name for which to obtain network information.
-function Network.GetHostByName(host)
-    
-end
+function Network.GetHostByName(host) end
 
----Return a table of network interface names (.Interface) and the IP address (.Address), MAC address (.MACAddress), broadcast address (.BroadcastAddress), 
+---Return a table of network interface names (.Interface) and the IP address (.Address), MAC address (.MACAddress), broadcast address (.BroadcastAddress),
 ---gateway (.Gateway), and netmask (.Netmask) for each.
-function Network.Interfaces()
-    
-end
+function Network.Interfaces() end
 
----Use the following methods to subscribe to a notification, publish a notification with specified data, and unsubscribe from a notification. 
+---Use the following methods to subscribe to a notification, publish a notification with specified data, and unsubscribe from a notification.
 ---This allows scripts running within the same Core to communicate with each other using control wiring or Component.
 Notifications = {
-    ---noteid : The token to use when unsubscribing from a notification.
-    noteid = ""
+	---noteid : The token to use when unsubscribing from a notification.
+	noteid = "",
 }
-
 
 ---Subscribe to a notification with a given name.
 ---Unsubscribe from a notification with the specified noteid.
 ---func : The callback to call when the named notification is triggered. The signature is function( name, data ).
-function Notifications.Subscribe( name, func )
-    
-end
+function Notifications.Subscribe(name, func) end
 
 ---Publish a named notification with given data. The data can be either a Lua table or a string.
 ---Note: You cannot call the Notifications.Publish() method inside a Notifications.Subscribe() callback. This will raise a Lua error.
 ---name : The name of the notification.
 ---data : the notification data
-function Notifications.Publish(name, data)
-    
-end
+function Notifications.Publish(name, data) end
 
 ---Unsubscribe from a notification with the specified noteid.
 ---name : The name of the notification.
-function Notifications.Unsubscribe(noteid)
-    
-end
+function Notifications.Unsubscribe(noteid) end
 
 ---Use the Ping library in Lua to check whether a device is reachable on the network.
----Note: The Lua Ping library requires that you run Q-SYS Designer as administrator ("Run as administrator" option in Windows) when emulating your design. 
+---Note: The Lua Ping library requires that you run Q-SYS Designer as administrator ("Run as administrator" option in Windows) when emulating your design.
 ---If you see a non-terminating "Socket failed to open" error message in the debug window, re-launch Designer as administrator.
 ---Ping object MUST be initialized with the .New function
 Ping = {
-    host = ""
+	host = "",
 }
 
 ---Rappresent a ping response object
-PingResponses =
-{
-    HostName = "",
-    ElapsedTime = 1
+PingResponses = {
+	HostName = "",
+	ElapsedTime = 1,
 }
 
 ---Create a new ping object.
 ---target_host : The hostname to ping.
-function Ping.New(target_host)
-    
-end
+function Ping.New(target_host) end
 
 ---Begin the ping session.
 ---single_shot : Bool. Set to true if you want only a single ping attempt.
-function Ping:start(single_shot)
-    
-end
+function Ping:start(single_shot) end
 
 ---Stop the ping session.
-function Ping:stop()
-    
-end
+function Ping:stop() end
 
 ---Set the timeout for waiting for a ping response.
 ---interval : The timeout duration, in seconds.
-function Ping:setTimeoutInterval(interval)
-    
-end
+function Ping:setTimeoutInterval(interval) end
 
 ---Set the interval for retrying after a ping request.
 ---interval : The timeout duration, in seconds.
-function Ping:setPingInterval(interval)
-    
-end
+function Ping:setPingInterval(interval) end
 
 ---Assign a Lua callback for successful ping events.
 ---response : callback for responseobject
-function Ping.EventHandler(response)
-    
-end
+function Ping.EventHandler(response) end
 
 ---Assign a Lua callback for unsuccessful ping events.
 ---response : callback for responseobject
-function Ping.ErrorHandler(response)
-    
-end
+function Ping.ErrorHandler(response) end
 
 ---Rappresent a QRCode, NOT used normally, use only the functions/methods
 QRCode = {
-    url = "",
-    mode = ""
+	url = "",
+	mode = "",
 }
 
 ---Generate a QR code SVG graphic.
@@ -588,16 +508,14 @@ QRCode = {
 ---medium = Level M, up to 15% error correction.
 ---quartile = Level Q, up to 25% error correction.
 ---high = Level H, up to 30% error correction.
-function QRCode.GenerateSVG(url, mode)
-    
-end
+function QRCode.GenerateSVG(url, mode) end
 
----Use the RapidJSON module to encode and decode large documents quickly. 
+---Use the RapidJSON module to encode and decode large documents quickly.
 ---It is similar to the standard JSON module, but can handle large amounts of data without risk of raising execution count errors.
 ---To use the RapidJSON module, add the following line to your script: rapidjson = require("rapidjson")
 rapidjson = {
-    _NAME = "rapidjson",
-    _VERSION = "scm"
+	_NAME = "rapidjson",
+	_VERSION = "scm",
 }
 
 ---Encode a Lua table to JSON string. JSON object keys are sorted by this function.
@@ -633,32 +551,32 @@ function rapidjson.object(table) end
 ---Same as rapidjson.object(), except the metatable field __jsontype is set as 'array'. The encode and dump function will encode it as JSON array.
 function rapidjson.array() end
 
----Serial port communication is supported via the RS-232 ports on some Q-SYS devices. 
+---Serial port communication is supported via the RS-232 ports on some Q-SYS devices.
 ---You can use a scripting component, including Control Script and Block Controller, to create a serial port connection in Q-SYS.
 SerialPorts = {
-     [1] = {
-        ---Returns true if port is connected, is readonly
-        IsOpen = false,
-        ---Number of bytes of data in buffer
-        BufferLength = 1,
-        ---This table contains pre-defined END OF LINE values
-        EOL = {
-            Any = "",
-            CrLf = "\r\n" or "\n",
-            CrLfStrict = "\r\n",
-            Lf = "\n",
-            Null = '\x00',
-            Custom = ""
-        },
-        Events = {
-            "Connected",
-            "Reconnect",
-            "Data",
-            "Closed",
-            "Error",
-            "Timeout"
-        }
-    }
+	[1] = {
+		---Returns true if port is connected, is readonly
+		IsOpen = false,
+		---Number of bytes of data in buffer
+		BufferLength = 1,
+		---This table contains pre-defined END OF LINE values
+		EOL = {
+			Any = "",
+			CrLf = "\r\n" or "\n",
+			CrLfStrict = "\r\n",
+			Lf = "\n",
+			Null = "\x00",
+			Custom = "",
+		},
+		Events = {
+			"Connected",
+			"Reconnect",
+			"Data",
+			"Closed",
+			"Error",
+			"Timeout",
+		},
+	},
 }
 
 ---Function called on any serial event.
@@ -673,7 +591,7 @@ function SerialPorts.EventHandler(port, event) end
 function SerialPorts:Open(baudRate, dataBits, parity) end
 
 ---Closes the serial port
-function SerialPorts:Close()end
+function SerialPorts:Close() end
 
 ---Writes specified data to the serial port. Raises error if port is not open.
 ---data : the data to write
@@ -683,8 +601,8 @@ function SerialPorts:Write(data) end
 ---length : length value to read
 function SerialPorts:Read(length) end
 
----Attempts to read a 'line' from the serial buffer. 
----EOL : is defined as in the SerialPorts.EOL table. 
+---Attempts to read a 'line' from the serial buffer.
+---EOL : is defined as in the SerialPorts.EOL table.
 ---custom : is an optional string only used by EOL.Custom.
 function SerialPorts:RealLine(EOL, Custom) end
 
@@ -705,7 +623,7 @@ function SerialPorts.Data() end
 ---Assign a function which is called when the serial port is closed
 function SerialPorts.Closed() end
 
----Assign a function which is called when the serial port is closed due to error. 
+---Assign a function which is called when the serial port is closed due to error.
 ---The error argument in the function will contain more information, which can be displayed if a variable was created to catch the error message.
 function SerialPorts.Error() end
 
@@ -715,55 +633,54 @@ function SerialPorts.Timeout() end
 ---Use the SNMP library in Lua to monitor OIDs obtained from an SNMP-enabled device's MIB file.
 ---Note: In the SNMP model, Q-SYS acts as the SNMP Manager, while the device you intend to monitor runs an SNMP Agent that allows for monitoring.
 SNMP = {
-    AuthType = {
-        ---No authorization type and no privacy type.
-        NoAuth = "NoAuth",
-        --- Authorization with no privacy.
-        AuthNoPriv = "AuthNoPriv",
-        ---Both authorization and privacy.
-        AuthPriv = "AuthPriv"
-    },
+	AuthType = {
+		---No authorization type and no privacy type.
+		NoAuth = "NoAuth",
+		--- Authorization with no privacy.
+		AuthNoPriv = "AuthNoPriv",
+		---Both authorization and privacy.
+		AuthPriv = "AuthPriv",
+	},
 
-    AuthProtocol ={
-        ---Disable the authorization protocol.
-        NoAuth = "NoAuth",
-        ---Enable the MD5 authorization protocol.
-        MD5 = "MD5",
-        ---Enable the SHA authorization protocol.
-        SHA = "SHA"
-    },
+	AuthProtocol = {
+		---Disable the authorization protocol.
+		NoAuth = "NoAuth",
+		---Enable the MD5 authorization protocol.
+		MD5 = "MD5",
+		---Enable the SHA authorization protocol.
+		SHA = "SHA",
+	},
 
-    PrivProtocol = {
-        ---Disable the privacy protocol.
-        NoPriv = "NoPriv",
-        ---Enable the AES privacy protocol.
-        AES = "AES",
-        --- Enable the DES privacy protocol.
-        DES = "DES"
-    },
+	PrivProtocol = {
+		---Disable the privacy protocol.
+		NoPriv = "NoPriv",
+		---Enable the AES privacy protocol.
+		AES = "AES",
+		--- Enable the DES privacy protocol.
+		DES = "DES",
+	},
 
-    SNMPDataType = {
-        unknown = "unknown",
-        integer32 = "integer32",
-        unsigned32 = "unsigned32",
-        unsigned_integer32 = "unsigned_integer32",
-        timeticks = "timeticks",
-        ip_address = "ip_address",
-        object_id = "object_id",
-        octet_string = "octet_string",
-        hex = "hex",
-        decimal = "decimal",
-        bit_string = "bit_string",
-        integer64 = "integer64",
-        unsigned64 = "unsigned64",
-        float32 = "float32",
-        double64 = "double64"
-    }
+	SNMPDataType = {
+		unknown = "unknown",
+		integer32 = "integer32",
+		unsigned32 = "unsigned32",
+		unsigned_integer32 = "unsigned_integer32",
+		timeticks = "timeticks",
+		ip_address = "ip_address",
+		object_id = "object_id",
+		octet_string = "octet_string",
+		hex = "hex",
+		decimal = "decimal",
+		bit_string = "bit_string",
+		integer64 = "integer64",
+		unsigned64 = "unsigned64",
+		float32 = "float32",
+		double64 = "double64",
+	},
 }
 
 ---Create a new SNMP session.
-function SNMP.New()   
-end
+function SNMP.New() end
 
 ---Specify the host to which to connect.
 ---hostname : The target host name.
@@ -809,7 +726,7 @@ function SNMP:getRequest(oid, callback) end
 function SNMP:setRequest(oid, new_value, type, callback) end
 
 ---Assign the Lua callback for successful SNMP events.
-function  SNMP.EventHandler() end
+function SNMP.EventHandler() end
 
 ---Assign the Lua callback for unsuccessful SNMP events.
 function SNMP.ErrorHandler() end
@@ -832,56 +749,55 @@ function SNMPTrap.EventHandler() end
 function SNMPTrap.ErrorHandler() end
 
 ---Use the System table to return Q-SYS environment information.
-System =
-{
-    ---Returns the build version number of Q-SYS environment.
-    BuildVersion = "",
-    ---Returns the Q-SYS Core's Locking ID, which is used for Q-SYS feature license activation. For more information, see Licensing.
-    LockingId = "",
-    ---Returns a Boolean indicating whether the design is emulating or running on a Core.
-    IsEmulating = false,
-    ---Returns the major version number of Q-SYS environment.
-    MajorVersion = "",
-    ---Returns the minor version number of Q-SYS environment.
-    MinorVersion = "",
-    ---Returns the complete version number of Q-SYS environment.
-    Version = ""
+System = {
+	---Returns the build version number of Q-SYS environment.
+	BuildVersion = "",
+	---Returns the Q-SYS Core's Locking ID, which is used for Q-SYS feature license activation. For more information, see Licensing.
+	LockingId = "",
+	---Returns a Boolean indicating whether the design is emulating or running on a Core.
+	IsEmulating = false,
+	---Returns the major version number of Q-SYS environment.
+	MajorVersion = "",
+	---Returns the minor version number of Q-SYS environment.
+	MinorVersion = "",
+	---Returns the complete version number of Q-SYS environment.
+	Version = "",
 }
 
 ---The TcpSocket object allows Q-SYS cores to make client TCP/IP connections to devices on the network.
 TcpSocket = {
-    ---Time, in seconds, to wait for data to be available on socket before raising an Error through the EventHandler.
-    ReadTimeout = 0,
-    ---Time, in seconds, to wait for data write to complete before raising an Error through the EventHandler.
-    WriteTimeout = 0,
-    ---Time in seconds to wait before attempting to reconnect. 0 disables automatic reconnect.
-    ReconnectTimeout = 0,
-    ---Returns true if socket is connected 
-    IsConnected = false,
-    ---Amount of data in buffer, in bytes
-    BufferLength = 0,
-    ---The socket has connected to the remote host callback
-    Connected = nil,
-    ---The socket is attempting to reconnect to the remote host callback
-    Reconnect = nil,
-    ---There is new data available in the socket buffer callback
-    Data = nil,
-    ---The socket was closed by the remote host callback
-    Closed = nil,
-    ---The socket was closed due to error. 
-    ---The error argument to the EventHandler will have more information, which can be displayed if a variable was created to catch the error message.
-    Error = nil,
-    ---A read or write timeout was triggered and the socket was closed.
-    Timeout = nil,
-    ---END OF LINE Table values
-    EOL = {
-        Any = "",
-        CrLf = "\r\n" or "\n",
-        CrLfStrict = "\r\n",
-        Lf = "\n",
-        Null = "\x00",
-        Custom = ""
-    }
+	---Time, in seconds, to wait for data to be available on socket before raising an Error through the EventHandler.
+	ReadTimeout = 0,
+	---Time, in seconds, to wait for data write to complete before raising an Error through the EventHandler.
+	WriteTimeout = 0,
+	---Time in seconds to wait before attempting to reconnect. 0 disables automatic reconnect.
+	ReconnectTimeout = 0,
+	---Returns true if socket is connected
+	IsConnected = false,
+	---Amount of data in buffer, in bytes
+	BufferLength = 0,
+	---The socket has connected to the remote host callback
+	Connected = nil,
+	---The socket is attempting to reconnect to the remote host callback
+	Reconnect = nil,
+	---There is new data available in the socket buffer callback
+	Data = nil,
+	---The socket was closed by the remote host callback
+	Closed = nil,
+	---The socket was closed due to error.
+	---The error argument to the EventHandler will have more information, which can be displayed if a variable was created to catch the error message.
+	Error = nil,
+	---A read or write timeout was triggered and the socket was closed.
+	Timeout = nil,
+	---END OF LINE Table values
+	EOL = {
+		Any = "",
+		CrLf = "\r\n" or "\n",
+		CrLfStrict = "\r\n",
+		Lf = "\n",
+		Null = "\x00",
+		Custom = "",
+	},
 }
 
 ---Creates a new TcpSocket instance.
@@ -913,7 +829,7 @@ function TcpSocket:ReadLine(EOL, custom) end
 ---start_pos : optional index where to start to search, default value is 1
 function TcpSocket:Search(str, start_pos) end
 
----The TcpServer object allows Q-SYS cores to accept client TCP/IP connections from devices on the network. 
+---The TcpServer object allows Q-SYS cores to accept client TCP/IP connections from devices on the network.
 TcpSocketServer = {}
 
 ---Creates a new TcpServer instance
@@ -926,10 +842,10 @@ function TcpSocketServer:Listen(port) end
 ---Close the listeing port and disconnect all the connected clients
 function TcpSocketServer:Close() end
 
----Function called on any incoming socket event. 
+---Function called on any incoming socket event.
 function TcpSocketServer.EventHandler() end
 
----The Timer object is used to create delays or trigger events after a defined elapsed time.  It should be used instead of Lua's native delay and time functions. 
+---The Timer object is used to create delays or trigger events after a defined elapsed time.  It should be used instead of Lua's native delay and time functions.
 Timer = {}
 
 ---Creates a new timer object
@@ -950,19 +866,17 @@ function Timer:Stop() end
 ---time : time interval in MILLISECONDS, when the time expire the function_pass is executed
 function Timer.CallAfter(function_pass, time) end
 
-Uci = {
-    
-}
+Uci = {}
 
 ---Table that store UCI elements
 DialogTable = {
-    Title = "",
-    Message = "",
-    ---The button list is a table consisting of strings – one string per desired response button.
-    Buttons = {},
-    ---The EventHandler Function receives an integer index of which button was pressed. 
-    ---The EventHandler argument is zero-based, so add 1 to the integer to match a Lua table entry.
-    Handler = nil
+	Title = "",
+	Message = "",
+	---The button list is a table consisting of strings – one string per desired response button.
+	Buttons = {},
+	---The EventHandler Function receives an integer index of which button was pressed.
+	---The EventHandler argument is zero-based, so add 1 to the integer to match a Lua table entry.
+	Handler = nil,
 }
 
 ---Display a dialog in a UCI that contains a title, message, and button selection list.
@@ -1006,8 +920,8 @@ function Uci.LogOff(TSC_Name) end
 
 ---Send and receive data over a UDP Socket connection.
 UdpSocket = {
-    ---Assign a function which is called when data is received 
-    Data = nil
+	---Assign a function which is called when data is received
+	Data = nil,
 }
 
 ---Creates a UDP Socket instance.
