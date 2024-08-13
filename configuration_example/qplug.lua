@@ -1,5 +1,7 @@
 -- Example QPlug configuration.
 return {
+	-- Your info:
+	me = { name = "Your name", email = "Your email" },
 	-- Set to a string if you want an external template. Can be a url or a path.
 	external_template = nil,
 	-- external_template = "https://github.com/qsys-plugins/BasePlugin",
