@@ -1,25 +1,108 @@
 use directories::BaseDirs;
 use mlua::{
-    Lua,
+    Lua, Table,
     Value::{self},
 };
 use serde::Serialize;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
-#[derive(Serialize, Debug, Clone)]
-pub struct Config<'lua> {
-    pub build_tool: Value<'lua>,        // default to built-in
-    pub external_template: Value<'lua>, // can be path or url - default to built-in template
+use crate::cli::subcommands::build::{self, VersionType};
+
+pub struct Author {
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub company: Option<String>,
 }
 
-fn return_config(config_file: PathBuf) -> Option<PathBuf> {
-    if config_file.exists() {
-        return Some(config_file);
+pub struct Config<'lua> {
+    pub build_tool: Box<dyn Fn(VersionType) + 'lua>,
+    pub template: String,
+    pub me: Author,
+}
+
+impl<'lua> Config<'lua> {
+    pub fn from_user_config(user_config: &UserConfig<'lua>) -> Self {
+        // Internal implementation as a callable
+        let default_build_tool = build::build;
+
+        // Determine which build_tool to use
+        let build_tool: Box<dyn Fn(VersionType) + 'lua> = match &user_config.build_tool {
+            Value::Function(f) => {
+                let func = f.clone();
+                Box::new(move |version: VersionType| {
+                    func.call::<_, ()>(version).unwrap();
+                })
+            }
+            _ => Box::new(default_build_tool),
+        };
+
+        // Determine which template to use
+        let template: String = match &user_config.external_template {
+            Value::String(s) => s.to_str().unwrap().to_string(),
+            _ => "pluginframework".to_string(),
+        };
+
+        let me: Author = match &user_config.me {
+            Value::Table(t) => Author {
+                name: Some(t.get("name").unwrap_or(Value::Nil).to_string().unwrap()),
+                email: Some(t.get("email").unwrap_or(Value::Nil).to_string().unwrap()),
+                company: Some(t.get("company").unwrap_or(Value::Nil).to_string().unwrap()),
+            },
+            _ => Author {
+                name: None,
+                email: None,
+                company: None,
+            },
+        };
+
+        Config {
+            build_tool,
+            template,
+            me,
+        }
     }
-    None
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub struct UserConfig<'lua> {
+    pub build_tool: Value<'lua>,        // default to built-in
+    pub external_template: Value<'lua>, // can be path or url - default to built-in template
+    pub me: Value<'lua>,
+}
+
+impl UserConfig<'_> {
+    pub fn new(lua: &Lua) -> UserConfig<'_> {
+        let user_config = match find_config_file() {
+            Some(path) => {
+                lua.globals()
+                    .set("lua_config", fs::read_to_string(path).unwrap())
+                    .unwrap();
+                lua.globals().get::<_, Table>("lua_config").unwrap()
+            }
+            None => {
+                let lua_config = lua.create_table().expect("Table creation failed");
+                lua_config.set("external_template", Value::Nil).unwrap();
+                lua_config.set("build_tool", Value::Nil).unwrap();
+                lua_config.set("me", Value::Nil).unwrap();
+                lua_config
+            }
+        };
+
+        UserConfig {
+            external_template: user_config.get("external_template").unwrap_or(Value::Nil),
+            build_tool: user_config.get("build_tool").unwrap_or(Value::Nil),
+            me: user_config.get("me").unwrap_or(Value::Nil),
+        }
+    }
 }
 
 fn find_config_file() -> Option<PathBuf> {
+    fn return_config(config_file: PathBuf) -> Option<PathBuf> {
+        if config_file.exists() {
+            return Some(config_file);
+        }
+        None
+    }
     // Check in XDG config directories (Linux, macOS)
     let base_dirs = BaseDirs::new().expect("No User Directory found");
     let mut config_file = base_dirs.config_dir().join("qplug/qplug.lua"); // ~/.config on Linux/macOS, AppData/Roaming on Windows
@@ -32,26 +115,6 @@ fn find_config_file() -> Option<PathBuf> {
     }
 }
 
-pub fn get_config(lua: &Lua) -> Config<'_> {
-    match find_config_file() {
-        Some(path) => {
-            todo!("Deserialize Config from {:?}", path);
-        }
-        None => {
-            let lua_config = lua.create_table().expect("Table creation failed");
-            lua_config.set("external_template", "Built-in").unwrap();
-            lua_config.set("build_tool", Value::Nil).unwrap();
-
-            let external_template = lua_config.get("external_template").unwrap_or(Value::Nil);
-            let build_tool = lua_config.get("build_tool").unwrap_or(Value::Nil);
-
-            Config {
-                external_template,
-                build_tool,
-            }
-        }
-    }
-}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -64,12 +127,18 @@ mod tests {
         let result = find_config_file();
         assert!(result.is_none());
     }
+    fn test_return_config(config_file: PathBuf) -> Option<PathBuf> {
+        if config_file.exists() {
+            return Some(config_file);
+        }
+        None
+    }
 
     fn get_dummy_config() -> String {
         r#"
                 return {
                     -- Set to a string if you want an external template. Can be a url or a path.
-                    external_template = nil,
+                    external_template = "My/path/to/template",
 
                     -- Which build tool to use. This can be a string or a function.
                     build_tool = function()
@@ -93,7 +162,7 @@ mod tests {
         fs::write(&config_file, get_dummy_config()).unwrap();
 
         // Mock the BaseDirs::config_dir() to return our temp_dir's config path
-        let result = return_config(config_file.clone());
+        let result = test_return_config(config_file.clone());
         assert_eq!(result, Some(config_file.clone()));
 
         // TempDir automatically cleans up when it goes out of scope
@@ -110,7 +179,7 @@ mod tests {
         fs::write(&config_file, get_dummy_config()).unwrap();
 
         // Mock the BaseDirs::home_dir() to return our temp_dir's home path
-        let result = return_config(config_file.clone());
+        let result = test_return_config(config_file.clone());
         assert_eq!(result, Some(config_file.clone()));
 
         // TempDir automatically cleans up when it goes out of scope
@@ -120,12 +189,9 @@ mod tests {
     #[test]
     fn test_get_config_default() {
         let lua = Lua::new();
-        let config = get_config(&lua);
+        let config = UserConfig::new(&lua);
 
         assert_eq!(config.build_tool, Value::Nil);
-        assert_eq!(
-            config.external_template,
-            Value::String(lua.create_string("Built-in").unwrap())
-        );
+        assert_eq!(config.external_template, Value::Nil);
     }
 }

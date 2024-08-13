@@ -1,8 +1,7 @@
 use std::{
     fs,
     io::{self, Write},
-    ops::Not,
-    path::Path,
+    path::{Path, PathBuf},
     process::exit,
 };
 
@@ -10,67 +9,81 @@ use git2::Repository;
 use mlua::Lua;
 use uuid::Uuid;
 
-use crate::lua::info::PluginInfo;
+use crate::{
+    config::Config,
+    files::{copy_dir, create_marker_file},
+    lua::info::PluginInfo,
+};
 
-pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua) {
+const PLUGIN_ROOT: &str = "plugin_src";
+const INFO_FILE: &str = "info.lua";
+
+pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
     // Setup plugin path
     let root_path = Path::new(name);
-    let plugin_path = root_path.join("plugin_src");
+    let plugin_path = root_path.join(PLUGIN_ROOT);
 
+    // Fail if the plugin already exists.
     if Path::exists(root_path) || Path::exists(&plugin_path) {
-        println!("The plugin already exists.");
+        eprint!("The plugin already exists.");
         exit(1);
     }
     // Create plugin directories
     fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
-    // Download the Base Plugin Example
-    fetch_template(&plugin_path);
-    // Get rid of unneeded files and directories
-    delete_uneeded_files_and_directories(
-        &plugin_path,
-        vec![
-            ".git",
-            ".vscode",
-            ".gitmodules",
-            "PluginCompile",
-            "README.md",
-        ],
-    );
+
+    // fetch the template based on the user's config. Default to internal template if none set.
+    fetch_template(&plugin_path, &config.template);
 
     // Init git repo
-    if no_git.not() {
+    if !no_git {
         init_git(root_path);
         println!("Git initialized");
     }
     println!("New plugin created: {}", name);
 
-    let info = get_user_info(name, None);
+    // Write the info.lua file
+    let info = get_user_info(name, None, config);
     info.clone()
-        .write(info.get_table(lua), plugin_path.join("info.lua"), lua)
+        .write(info.get_table(lua), plugin_path.join(INFO_FILE), lua)
         .unwrap();
 
+    create_marker_file(root_path);
     add_lua_defs(root_path);
 }
 
-fn fetch_template(path: &Path) -> Repository {
-    let url = "https://github.com/qsys-plugins/BasePlugin";
-    match Repository::clone(url, path) {
-        Ok(repo) => repo,
-        Err(e) => panic!("Failed to clone: {}", e),
+//TODO: Cleanup signature - Returns not currently being used.
+fn fetch_template(path: &Path, template: &str) -> PathBuf {
+    // let url = "https://github.com/qsys-plugins/BasePlugin";
+    if !template.matches("http").collect::<Vec<&str>>().is_empty() {
+        match Repository::clone(template, path) {
+            Ok(repo) => repo.path().to_path_buf(),
+            Err(e) => panic!("Failed to clone: {}", e),
+        }
+    } else {
+        //TODO: Check to see if this string is user provided or not."
+        copy_dir(Path::new(template), path, Some("pluginframework"));
+        Path::new(template).to_path_buf()
     }
 }
 
-fn get_user_info(name: &String, config: Option<PluginInfo>) -> PluginInfo {
-    match config {
+fn get_user_info(name: &String, existing_info: Option<PluginInfo>, config: &Config) -> PluginInfo {
+    match existing_info {
         Some(config) => config,
         None => {
             // Author Name
-            io::stdout().flush().unwrap();
-            let mut author = String::new();
-            println!("Enter your name: ");
-            io::stdin()
-                .read_line(&mut author)
-                .expect("Oops, Could not read your name.");
+            let author = match &config.me.name {
+                // Get name from config file
+                Some(name) => name.to_owned(),
+                // If not set in config file, ask user
+                None => {
+                    let mut author = String::new();
+                    println!("Enter your name: ");
+                    io::stdin()
+                        .read_line(&mut author)
+                        .expect("Oops, Could not read your name.")
+                        .to_string()
+                }
+            };
 
             // Description
             io::stdout().flush().unwrap();
@@ -101,25 +114,6 @@ fn add_lua_defs(root_path: &Path) {
         defs_path.join("qsys_defs.lua"),
     )
     .expect("Copy of file failed.");
-}
-
-fn delete_uneeded_files_and_directories(path: &Path, dirs: Vec<&str>) {
-    for dir in dirs {
-        // Remove Directories
-        if path.join(dir).is_dir() {
-            match fs::remove_dir_all(path.join(dir)) {
-                Ok(_) => (),
-                Err(e) => panic!("Failed to remove directory: {}. Error: {}", dir, e),
-            }
-        }
-        // Remove Files
-        else if path.join(dir).is_file() {
-            match fs::remove_file(path.join(dir)) {
-                Ok(_) => (),
-                Err(e) => panic!("Failed to remove file: {}. Error: {}", dir, e),
-            }
-        }
-    }
 }
 
 fn init_git(path: &Path) -> Repository {
