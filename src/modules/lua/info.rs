@@ -114,6 +114,7 @@ mod tests {
     use std::path::Path;
 
     use super::*;
+
     #[test]
     fn test_get_info() {
         let lua = Lua::new();

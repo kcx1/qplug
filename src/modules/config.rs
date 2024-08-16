@@ -4,8 +4,12 @@ use mlua::{
     Value::{self},
 };
 use serde::Serialize;
-use std::{fs, path::PathBuf};
+use std::{
+    fs::{self},
+    path::PathBuf,
+};
 
+use crate::assets::TEMPLATE_DIR;
 use crate::cli::subcommands::build::{self, VersionType};
 
 pub struct Author {
@@ -14,9 +18,15 @@ pub struct Author {
     pub company: Option<String>,
 }
 
+pub enum Template {
+    Url(String),
+    FileSystem(PathBuf),
+    InMemoryDir(include_dir::Dir<'static>),
+}
+
 pub struct Config<'lua> {
     pub build_tool: Box<dyn Fn(VersionType) + 'lua>,
-    pub template: String,
+    pub template: Template,
     pub me: Author,
 }
 
@@ -37,9 +47,18 @@ impl<'lua> Config<'lua> {
         };
 
         // Determine which template to use
-        let template: String = match &user_config.external_template {
-            Value::String(s) => s.to_str().unwrap().to_string(),
-            _ => "pluginframework".to_string(),
+        let template: Template = match &user_config.external_template {
+            Value::String(s) => {
+                let template_str = s.to_str().unwrap();
+                if template_str.starts_with("http") {
+                    Template::Url(template_str.to_owned())
+                } else {
+                    Template::FileSystem(PathBuf::from(template_str))
+                }
+            }
+            // Cloning here might be a big waste of resources.
+            // FIXME:: Look at another solution
+            _ => Template::InMemoryDir(TEMPLATE_DIR.clone()),
         };
 
         let me: Author = match &user_config.me {
@@ -119,7 +138,7 @@ fn find_config_file() -> Option<PathBuf> {
 mod tests {
     use super::*;
     use std::fs;
-    use tempdir::TempDir;
+    use tempfile::tempdir;
 
     // Test the `find_config_file` function with no config file present.
     #[test]
@@ -153,7 +172,7 @@ mod tests {
     // Test the `find_config_file` function with a config file in the XDG config directory.
     #[test]
     fn test_find_config_file_in_xdg_config() {
-        let temp_dir = TempDir::new("test").unwrap();
+        let temp_dir = tempdir().unwrap();
         let config_dir = temp_dir.path().join("config/qplug");
         let config_file = config_dir.join("qplug.lua");
 
@@ -165,13 +184,13 @@ mod tests {
         let result = test_return_config(config_file.clone());
         assert_eq!(result, Some(config_file.clone()));
 
-        // TempDir automatically cleans up when it goes out of scope
+        // tempdir automatically cleans up when it goes out of scope
     }
 
     // Test the `find_config_file` function with a config file in the home directory.
     #[test]
     fn test_find_config_file_in_home_dir() {
-        let temp_dir = TempDir::new("test").unwrap();
+        let temp_dir = tempdir().unwrap();
         let home_dir = temp_dir.path();
         let config_file = home_dir.join(".qplug.lua");
 
@@ -182,7 +201,7 @@ mod tests {
         let result = test_return_config(config_file.clone());
         assert_eq!(result, Some(config_file.clone()));
 
-        // TempDir automatically cleans up when it goes out of scope
+        // tempdir automatically cleans up when it goes out of scope
     }
 
     // Test the `get_config` function when no config file is found (default values).

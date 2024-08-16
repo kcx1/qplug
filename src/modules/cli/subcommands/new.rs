@@ -10,7 +10,8 @@ use mlua::Lua;
 use uuid::Uuid;
 
 use crate::{
-    config::Config,
+    assets::DEFINITIONS_DIR,
+    config::{Config, Template},
     files::{copy_dir, create_marker_file},
     lua::info::PluginInfo,
 };
@@ -52,17 +53,21 @@ pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
 }
 
 //TODO: Cleanup signature - Returns not currently being used.
-fn fetch_template(path: &Path, template: &str) -> PathBuf {
+fn fetch_template(path: &Path, template: &Template) -> PathBuf {
     // let url = "https://github.com/qsys-plugins/BasePlugin";
-    if !template.matches("http").collect::<Vec<&str>>().is_empty() {
-        match Repository::clone(template, path) {
+    match template {
+        Template::Url(s) => match Repository::clone(s, path) {
             Ok(repo) => repo.path().to_path_buf(),
             Err(e) => panic!("Failed to clone: {}", e),
+        },
+        Template::FileSystem(_) => {
+            copy_dir(template, path);
+            path.to_path_buf()
         }
-    } else {
-        //TODO: Check to see if this string is user provided or not."
-        copy_dir(Path::new(template), path, Some("pluginframework"));
-        Path::new(template).to_path_buf()
+        Template::InMemoryDir(_) => {
+            copy_dir(template, path);
+            path.to_path_buf()
+        }
     }
 }
 
@@ -109,11 +114,7 @@ fn add_lua_defs(root_path: &Path) {
     // Add Lua Defs
     let defs_path = root_path.join("definitions");
     fs::create_dir(&defs_path).expect("Directory creation failed.");
-    fs::copy(
-        Path::new("./definitions/qsys_defs.lua"),
-        defs_path.join("qsys_defs.lua"),
-    )
-    .expect("Copy of file failed.");
+    copy_dir(&Template::InMemoryDir(DEFINITIONS_DIR.clone()), &defs_path);
 }
 
 fn init_git(path: &Path) -> Repository {
