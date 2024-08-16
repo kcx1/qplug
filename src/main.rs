@@ -10,6 +10,7 @@ fn create_lua_env() -> Lua {
 }
 
 fn main() {
+    std::env::set_var("RUST_BACKTRACE", "1");
     let lua_env = create_lua_env();
 
     let user_config = UserConfig::new(&lua_env);
