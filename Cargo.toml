@@ -8,11 +8,11 @@ clap = { version = "4.5.11", features = ["derive"]}
 clap_complete = "4.5.13"
 directories = "5.0.1"
 git2 = "0.19.0"
+include_dir = "0.7.4"
 mlua = { version = "0.9.9", features = ["serialize", "lua54"] }
 regex = "1.10.5"
 serde = { version = "1.0.204", features = ["derive"] }
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
 
 [dev-dependencies]
-tempdir = "0.3.7"
 tempfile = "3.10.1"
