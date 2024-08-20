@@ -10,7 +10,7 @@ use std::{
 };
 
 use crate::assets::TEMPLATE_DIR;
-use crate::cli::subcommands::build::{self, VersionType};
+use crate::cli::subcommands::build::{self};
 
 pub struct Author {
     pub name: Option<String>,
@@ -25,24 +25,19 @@ pub enum Template {
 }
 
 pub struct Config<'lua> {
-    pub build_tool: Box<dyn Fn(VersionType) + 'lua>,
+    pub build_tool: Box<dyn Fn() + 'lua>,
     pub template: Template,
     pub me: Author,
 }
 
 impl<'lua> Config<'lua> {
-    pub fn from_user_config(user_config: &UserConfig<'lua>) -> Self {
+    pub fn from_user_config(user_config: &'lua UserConfig) -> Self {
         // Internal implementation as a callable
-        let default_build_tool = build::build;
+        let default_build_tool = build::compile;
 
         // Determine which build_tool to use
-        let build_tool: Box<dyn Fn(VersionType) + 'lua> = match &user_config.build_tool {
-            Value::Function(f) => {
-                let func = f.clone();
-                Box::new(move |version: VersionType| {
-                    func.call::<_, ()>(version).unwrap();
-                })
-            }
+        let build_tool: Box<dyn Fn()> = match &user_config.build_tool {
+            Value::Function(f) => Box::new(|| f.call(()).unwrap()),
             _ => Box::new(default_build_tool),
         };
 
