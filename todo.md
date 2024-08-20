@@ -28,9 +28,19 @@
 - <input type="checkbox"/> Remove .git files from downloaded URLs. 
 
 
+##### Commands
+- Compile -> Only merge the files. (No update to build number)
+- Update -> Allow user to update parts of the info.lua file.
+    - Name, email, project description.
+    - Version number.(This should honestly just be the build number Major.Minor)
+
+
+
 
 ### Roadmap
 - <input type="checkbox"/> Allow users to set a table that will parse into a ```std::process::Command;``` that can be used instead of a function for the build tool. 
 - <input type="checkbox"/> Allow users to set a qplug config per project.
 - <input type="checkbox"/> Add cli commands to update info.lua.
     - <input type="checkbox"/> Name, email, project description.
+- Allow users to use a flat qplug file.
+- Allow users to specify paths in the cli. 
