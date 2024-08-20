@@ -17,7 +17,6 @@ pub enum VersionType {
 }
 impl UserData for VersionType {}
 
-//TODO: Add update command to only update version without compiling
 pub fn update_version(version: VersionType, info_path: PathBuf, lua: &Lua) {
     let mut info = PluginInfo::get_struct(&info_path, lua).expect("Error getting plugin info.");
     info = info.update(version).expect("Update failed.");
