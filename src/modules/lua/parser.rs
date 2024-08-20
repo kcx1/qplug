@@ -5,6 +5,7 @@ use std::{
 
 use mlua::{Lua, Table, Value};
 use regex::Regex;
+use crate::assets::INIT_LUA;
 
 pub fn name_table(table_name: &str, table: &str) -> String {
     format!("{} = {}", table_name, table).to_string()
@@ -42,11 +43,11 @@ pub fn serialize_table(lua: &Lua, table: &Table) -> String {
 pub fn find_lua_requirements() {}
 
 pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Result<()> {
-    let init_file = plugin_path.join("init.lua");
+    let init_file = INIT_LUA.clone().unwrap();
     let qplug_file = root_path.join("qplug.lua");
 
     // Read the skeleton Lua file
-    let init_content = fs::read_to_string(init_file)?;
+    let mut init_content = fs::read_to_string(init_file)?;
 
     // Regex to match require statements (assumes simple pattern like require('module'))
     let re = Regex::new(r#"require\(['"]([^'"]+)['"]\)"#).unwrap();
