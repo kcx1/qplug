@@ -1,10 +1,8 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{fs, path::PathBuf};
 
 use mlua::{Lua, Table, Value};
-use regex::Regex;
+use regex::{Captures, Regex};
+
 use crate::assets::INIT_LUA;
 
 pub fn name_table(table_name: &str, table: &str) -> String {
@@ -40,7 +38,22 @@ pub fn serialize_table(lua: &Lua, table: &Table) -> String {
     result
 }
 
-pub fn find_lua_requirements() {}
+pub fn find_lua_requirements(haystack: &str, plugin_path: PathBuf) -> String {
+    // Regex to match require statements (assumes simple pattern like require('module'))
+    let re = Regex::new(r#"require\(['"]([^'"]+)['"]\)"#).unwrap();
+
+    let result = re.replace_all(haystack, |cap: &Captures| {
+        let mod_path = plugin_path.join(format!("{}.lua", cap[1].to_string().replace('.', "/")));
+        if mod_path.exists() {
+            fs::read_to_string(mod_path).unwrap()
+        } else {
+            eprintln!("Module {:?} not found", &cap[1]);
+            String::new()
+        }
+    });
+
+    result.to_string()
+}
 
 pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Result<()> {
     let init_file = INIT_LUA.clone().unwrap();
@@ -49,30 +62,11 @@ pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Res
     // Read the skeleton Lua file
     let mut init_content = fs::read_to_string(init_file)?;
 
-    // Regex to match require statements (assumes simple pattern like require('module'))
-    let re = Regex::new(r#"require\(['"]([^'"]+)['"]\)"#).unwrap();
-
-    // Collect all unique module names from the require statements
-    let mut modules = std::collections::HashSet::new();
-    for cap in re.captures_iter(&init_content) {
-        modules.insert(cap[1].to_string().replace('.', "/"));
-    }
-
-    // Read each module's content and replace the require statements
-    let mut result_content = init_content.clone();
-    for module in modules {
-        let module_path = plugin_path.join(format!("{}.lua", module));
-        if module_path.exists() {
-            let module_content = fs::read_to_string(module_path)?;
-            result_content =
-                result_content.replace(&format!(r#"require('{}')"#, module), &module_content);
-        } else {
-            eprintln!("Warning: Module file for '{}' not found", module);
-        }
-    }
+    // Update the init file with the modules.
+    init_content = find_lua_requirements(&init_content, plugin_path);
 
     // Write the result to a new file
-    fs::write(qplug_file, result_content)?;
+    fs::write(qplug_file, init_content)?;
 
     Ok(())
 }
@@ -164,4 +158,18 @@ mod tests {
         let expected = "table_with_function = {function_key = unsupported}";
         assert_eq!(&serialized, expected);
     }
+
+    // #[test]
+    // fn test_find_lua_requirements() {
+    //     let content = r#"
+    //     require("qplug")
+    //     require("qplug_core")
+    //     require("qplug.core")
+    //     "#;
+    //
+    //     let results = find_lua_requirements(content);
+    //     for result in results {
+    //         println!("{}", result);
+    //     }
+    // }
 }
