@@ -1,9 +1,1 @@
-PluginInfo = {
-	Name = "Base Plugin",
-	Version = "0.0",
-	BuildVersion = "0.0.0.0",
-	Id = "<guid>",
-	Author = "Your_Company",
-	Description = "A very basic plugin",
-}
-
+PluginInfo = {Version = "0.0", Name = "Base Plugin", Id = "<guid>", BuildVersion = "0.0.0.2", Description = "A very basic plugin", Author = "Your_Company"}
