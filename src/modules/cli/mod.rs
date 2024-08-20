@@ -36,6 +36,10 @@ pub fn cli() -> Command {
                         .ignore_case(true),
                 ),
         )
+        .subcommand(
+            Command::new("compile")
+                .about("Complie the plugin. Do not increment versioning or copy to plugin folder."),
+        )
         //Generate shell completion
         .subcommand(
             Command::new("completions")

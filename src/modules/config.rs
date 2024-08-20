@@ -10,7 +10,6 @@ use std::{
 };
 
 use crate::assets::TEMPLATE_DIR;
-use crate::cli::subcommands::build::{self};
 
 pub struct Author {
     pub name: Option<String>,
@@ -33,7 +32,7 @@ pub struct Config<'lua> {
 impl<'lua> Config<'lua> {
     pub fn from_user_config(user_config: &'lua UserConfig) -> Self {
         // Internal implementation as a callable
-        let default_build_tool = build::compile;
+        let default_build_tool = crate::cli::subcommands::compile::compile;
 
         // Determine which build_tool to use
         let build_tool: Box<dyn Fn()> = match &user_config.build_tool {

@@ -1,11 +1,10 @@
 use clap::ValueEnum;
 use mlua::{Lua, UserData};
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
-use crate::{
-    files::find_marker_file,
-    lua::{info::PluginInfo, parser::merge_lua_files},
-};
+use crate::lua::info::PluginInfo;
+
+use super::compile::compile;
 
 //TODO: Refactor this to a more central location.
 #[derive(ValueEnum, Clone, Debug)]
@@ -17,30 +16,6 @@ pub enum VersionType {
     Major,
 }
 impl UserData for VersionType {}
-
-// Build steps:
-//     - Get info
-//     - Update info.version based on increment
-//     - Compile plugin using config.
-
-//TODO: Add compile command
-pub fn compile() {
-    let current_path = env::current_dir()
-        .expect("Unable to get current directory. Please check your permissions.");
-    let marker = find_marker_file(current_path.as_path());
-    if marker.is_some() {
-        let root_path = marker.unwrap();
-        let plugin_path = root_path.join("plugin_src");
-        match merge_lua_files(root_path, plugin_path) {
-            Ok(_) => println!("Plugin updated successfully."),
-            Err(e) => println!("Failed to update plugin: {}", e),
-        }
-    } else {
-        println!(
-            "No plugin found. Please create a plugin first or navigate to a plugin directory."
-        );
-    }
-}
 
 //TODO: Add update command to only update version without compiling
 pub fn update_version(version: VersionType, info_path: PathBuf, lua: &Lua) {

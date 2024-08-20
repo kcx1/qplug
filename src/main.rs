@@ -34,6 +34,9 @@ fn main() {
                 .unwrap();
             cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), &lua_env)
         }
+        Some(("compile", _sub_matches)) => {
+            cli::subcommands::compile::compile();
+        }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
             let mut app = Command::new(APP_NAME);
