@@ -10,6 +10,8 @@ fn create_lua_env() -> Lua {
     Lua::new()
 }
 
+const APP_NAME: &str = "qplug";
+
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "1");
     let lua_env = create_lua_env();
@@ -26,16 +28,16 @@ fn main() {
             cli::subcommands::new::create_plugin(name, no_git, &lua_env, &config);
         }
         Some(("build", sub_matches)) => {
+            //TODO: Look into allowing builds for custom flat qplug files. (no info.lua file)
             let version = sub_matches
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
-            todo!("Use build command from config")
             cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), &lua_env)
         }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
-            let mut app = Command::new("my_cli_app");
-            generate(*shell, &mut app, "my_cli_app", &mut io::stdout());
+            let mut app = Command::new(APP_NAME);
+            generate(*shell, &mut app, APP_NAME, &mut io::stdout());
         }
         _ => unreachable!(),
     }
