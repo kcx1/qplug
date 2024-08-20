@@ -106,6 +106,23 @@ pub fn find_marker_file(starting_dir: &Path) -> Option<PathBuf> {
     None
 }
 
+pub fn find_file_recursively(dir: &Path, file_name: &str) -> Option<PathBuf> {
+    if dir.is_dir() {
+        for entry in fs::read_dir(dir).ok()? {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(found) = find_file_recursively(&path, file_name) {
+                    return Some(found);
+                }
+            } else if path.file_name().and_then(|name| name.to_str()) == Some(file_name) {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use crate::assets::TEMPLATE_DIR;
