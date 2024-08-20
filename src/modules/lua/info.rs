@@ -3,15 +3,10 @@ use mlua::{Lua, LuaSerdeExt, Result, Table, UserData};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use uuid::Uuid;
+
+use crate::cli::subcommands::build::VersionType;
 
 use super::parser::{self, name_table};
-
-pub enum BuildIncrement {
-    Patch = 2,
-    Minor = 1,
-    Major = 0,
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PluginInfo {
@@ -66,43 +61,52 @@ impl PluginInfo {
         table
     }
 
-    pub fn update(mut self, increment: BuildIncrement) -> Result<PluginInfo> {
-        self.id = Uuid::new_v4().to_string();
+    pub fn update(mut self, increment: VersionType) -> Result<PluginInfo> {
+        // self.id = Uuid::new_v4().to_string();
         self.build_version = PluginInfo::update_build_version(self.build_version, increment);
 
         Ok(self)
     }
 
-    pub fn write(self, table: Table, path: PathBuf, lua: &Lua) -> Result<()> {
-        let table = parser::serialize_table(lua, &table);
+    pub fn write(self, path: PathBuf, lua: &Lua) -> Result<()> {
+        let table = parser::serialize_table(lua, &self.get_table(lua));
         let contents = name_table("PluginInfo", &table);
 
         Ok(fs::write(path, contents)?)
     }
 
-    pub fn update_build_version(version: String, increment: BuildIncrement) -> String {
+    pub fn update_build_version(version: String, increment: VersionType) -> String {
         let mut ver: Vec<&str> = version.split('.').collect();
 
         match increment {
-            BuildIncrement::Patch => {
+            VersionType::Dev => {
+                let update = ver[3].parse::<i32>().unwrap_or(0) + 1;
+                let update_string = &update.to_string();
+                ver[3] = update_string;
+                ver.join(".").to_string()
+            }
+            VersionType::Patch => {
                 let update = ver[2].parse::<i32>().unwrap_or(0) + 1;
                 let update_string = &update.to_string();
                 ver[2] = update_string;
+                ver[3] = "0";
                 ver.join(".").to_string()
             }
-            BuildIncrement::Minor => {
+            VersionType::Minor => {
                 let update = ver[1].parse::<i32>().unwrap_or(0) + 1;
                 let update_string = &update.to_string();
                 ver[1] = update_string;
                 ver[2] = "0";
+                ver[3] = "0";
                 ver.join(".").to_string()
             }
-            BuildIncrement::Major => {
+            VersionType::Major => {
                 let update = ver[0].parse::<i32>().unwrap_or(0) + 1;
                 let update_string = &update.to_string();
                 ver[0] = update_string;
                 ver[1] = "0";
                 ver[2] = "0";
+                ver[3] = "0";
                 ver.join(".").to_string()
             }
         }
@@ -123,27 +127,32 @@ mod tests {
     }
     #[test]
     fn test_update_major_build_number() {
-        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Major);
-        let control = "2.0.0".to_string();
+        let updated = PluginInfo::update_build_version("1.0.0.0".to_string(), VersionType::Major);
+        let control = "2.0.0.0".to_string();
         assert_eq!(updated, control);
     }
     #[test]
     fn test_update_minor_build_number() {
-        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Minor);
-        let control = "1.1.0".to_string();
+        let updated = PluginInfo::update_build_version("1.0.0.0".to_string(), VersionType::Minor);
+        let control = "1.1.0.0".to_string();
         assert_eq!(updated, control);
     }
     #[test]
     fn test_update_patch_build_number() {
-        let updated = PluginInfo::update_build_version("1.0.0".to_string(), BuildIncrement::Patch);
-        let control = "1.0.1".to_string();
+        let updated = PluginInfo::update_build_version("1.0.0.0".to_string(), VersionType::Patch);
+        let control = "1.0.1.0".to_string();
         assert_eq!(updated, control);
     }
     #[test]
     fn test_update_patch_build_number_with_big_number() {
-        let updated =
-            PluginInfo::update_build_version("1.0.999".to_string(), BuildIncrement::Patch);
-        let control = "1.0.1000".to_string();
+        let updated = PluginInfo::update_build_version("1.0.999.0".to_string(), VersionType::Patch);
+        let control = "1.0.1000.0".to_string();
+        assert_eq!(updated, control);
+    }
+    #[test]
+    fn test_update_dev_build_number() {
+        let updated = PluginInfo::update_build_version("1.0.0.0".to_string(), VersionType::Dev);
+        let control = "1.0.0.1".to_string();
         assert_eq!(updated, control);
     }
     #[test]
@@ -152,10 +161,11 @@ mod tests {
         let info =
             PluginInfo::get_struct(&Path::new("./Api/plugin_src/info.lua").to_path_buf(), &lua)
                 .unwrap();
-        let updated = info.clone().update(BuildIncrement::Patch).unwrap();
+        let updated = info.clone().update(VersionType::Patch).unwrap();
 
         assert_ne!(&updated.build_version, &info.build_version);
-        assert_ne!(&updated.id, &info.id);
+        //Updated this to remain the same once created.
+        assert_eq!(&updated.id, &info.id);
     }
     #[test]
     fn test_write_info() {
@@ -164,7 +174,6 @@ mod tests {
         let info = PluginInfo::get_struct(&info_path.to_path_buf(), &lua).unwrap();
         info.clone()
             .write(
-                info.get_table(&lua),
                 Path::new("./Api/plugin_src/test_info.lua").to_path_buf(),
                 &lua,
             )
