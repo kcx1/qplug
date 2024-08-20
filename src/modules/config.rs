@@ -17,19 +17,19 @@ pub struct Author {
     pub company: Option<String>,
 }
 
-pub enum Template {
+pub enum Template<'a> {
     Url(String),
     FileSystem(PathBuf),
-    InMemoryDir(include_dir::Dir<'static>),
+    InMemoryDir(&'a include_dir::Dir<'static>),
 }
 
-pub struct Config<'lua> {
+pub struct Config<'lua, 'a> {
     pub build_tool: Box<dyn Fn() + 'lua>,
-    pub template: Template,
+    pub template: Template<'a>,
     pub me: Author,
 }
 
-impl<'lua> Config<'lua> {
+impl<'lua, 'a> Config<'lua, 'a> {
     pub fn from_user_config(user_config: &'lua UserConfig) -> Self {
         // Internal implementation as a callable
         let default_build_tool = crate::cli::subcommands::compile::compile;
@@ -50,9 +50,7 @@ impl<'lua> Config<'lua> {
                     Template::FileSystem(PathBuf::from(template_str))
                 }
             }
-            // Cloning here might be a big waste of resources.
-            // FIXME:: Look at another solution
-            _ => Template::InMemoryDir(TEMPLATE_DIR.clone()),
+            _ => Template::InMemoryDir(&TEMPLATE_DIR),
         };
 
         let me: Author = match &user_config.me {

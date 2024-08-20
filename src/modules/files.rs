@@ -70,7 +70,7 @@ impl Extractable for Path {
     }
 }
 
-impl Extractable for Template {
+impl Extractable for Template<'_> {
     fn extract(&self, dest: &Path) -> io::Result<()> {
         match self {
             Template::FileSystem(p) => p.extract(dest),
@@ -199,7 +199,7 @@ mod tests {
         assert!(dest_dir.exists());
 
         // Extract in-memory directory to the destination
-        copy_dir(&Template::InMemoryDir(TEMPLATE_DIR.clone()), &dest_dir).expect("Copy failed");
+        copy_dir(&Template::InMemoryDir(&TEMPLATE_DIR), &dest_dir).expect("Copy failed");
 
         // Verify some expected file or directory exists in the destination
         let expected_file_path = TEMPLATE_DIR.get_entry("init.lua");

@@ -112,7 +112,7 @@ fn add_lua_defs(root_path: &Path) {
     // Add Lua Defs
     let defs_path = root_path.join("definitions");
     fs::create_dir(&defs_path).expect("Directory creation failed.");
-    copy_dir(&Template::InMemoryDir(DEFINITIONS_DIR.clone()), &defs_path)
+    copy_dir(&Template::InMemoryDir(&DEFINITIONS_DIR), &defs_path)
         .expect("Failed to copy definitions.");
 }
 
