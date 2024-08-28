@@ -57,7 +57,8 @@ pub fn find_lua_requirements(haystack: &str, plugin_path: PathBuf) -> String {
 
 pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Result<()> {
     let init_file = INIT_LUA.clone().unwrap();
-    let qplug_file = root_path.join("qplug.lua");
+    let plugin_name = root_path.file_name().unwrap();
+    let qplug_file = root_path.join(format!("{:?}.lua", plugin_name));
 
     // Read the skeleton Lua file
     let mut init_content = fs::read_to_string(init_file)?;
