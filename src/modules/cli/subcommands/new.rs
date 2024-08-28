@@ -41,9 +41,18 @@ pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
     }
     println!("New plugin created: {}", name);
 
+    // If name was set as a path, use the last part
+    let plugin_name: &String = &name
+        .split('/')
+        .collect::<Vec<&str>>()
+        .last()
+        .unwrap()
+        .to_owned()
+        .to_string();
+
     // Write the info.lua file
-    let info = get_user_info(name, None, config);
-    info.write(INFO_LUA.clone().unwrap(), lua)
+    let info = get_user_info(plugin_name, None, config);
+    info.write_to_file(INFO_LUA.clone().unwrap(), lua)
         .expect("Failed to write info.lua");
 
     create_marker_file(root_path);
@@ -51,7 +60,8 @@ pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
 }
 
 //TODO: Cleanup signature - Returns not currently being used.
-fn fetch_template(path: &Path, template: &Template) -> PathBuf {
+pub fn fetch_template(path: &Path, template: &Template) -> PathBuf {
+    // path = path to plugin dir
     // let url = "https://github.com/qsys-plugins/BasePlugin";
     match template {
         Template::Url(s) => match Repository::clone(s, path) {
@@ -108,7 +118,7 @@ fn get_user_info(name: &String, existing_info: Option<PluginInfo>, config: &Conf
     }
 }
 
-fn add_lua_defs(root_path: &Path) {
+pub fn add_lua_defs(root_path: &Path) {
     // Add Lua Defs
     let defs_path = root_path.join("definitions");
     fs::create_dir(&defs_path).expect("Directory creation failed.");
@@ -116,7 +126,7 @@ fn add_lua_defs(root_path: &Path) {
         .expect("Failed to copy definitions.");
 }
 
-fn init_git(path: &Path) -> Repository {
+pub fn init_git(path: &Path) -> Repository {
     match Repository::init(path) {
         Ok(repo) => repo,
         Err(e) => panic!("Failed to initialize git repo: {}", e),
