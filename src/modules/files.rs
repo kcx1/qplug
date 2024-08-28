@@ -89,8 +89,11 @@ pub fn create_marker_file(root_path: &Path) {
     fs::write(root_path.join(MARKER_FILE), "").expect("Failed to write marker file");
 }
 
-pub fn find_marker_file(starting_dir: &Path) -> Option<PathBuf> {
-    let mut current_dir = starting_dir;
+pub fn find_marker_file(path: Option<&Path>) -> Option<PathBuf> {
+    let mut current_dir = match path {
+        Some(path) => path.into(),
+        None => pwd(),
+    };
 
     loop {
         if current_dir.join(MARKER_FILE).exists() {
@@ -98,7 +101,7 @@ pub fn find_marker_file(starting_dir: &Path) -> Option<PathBuf> {
         }
 
         match current_dir.parent() {
-            Some(parent) => current_dir = parent,
+            Some(parent) => current_dir = parent.into(),
             None => break,
         }
     }
@@ -121,6 +124,11 @@ pub fn find_file_recursively(dir: &Path, file_name: &str) -> Option<PathBuf> {
         }
     }
     None
+}
+
+pub fn pwd() -> PathBuf {
+    std::env::current_dir()
+        .expect("Failed to get current directory. Please check your permissions.")
 }
 
 #[cfg(test)]
@@ -230,7 +238,7 @@ mod tests {
         create_marker_file(root_path);
 
         // Find the marker file starting from the nested directory
-        let found_marker = find_marker_file(&nested_dir).unwrap();
+        let found_marker = find_marker_file(Some(root_path)).unwrap();
 
         // Verify the correct directory was found
         assert_eq!(found_marker, root_path.to_path_buf());
@@ -246,7 +254,7 @@ mod tests {
         fs::create_dir(&nested_dir).unwrap();
 
         // Try to find the marker file starting from the nested directory
-        let found_marker = find_marker_file(&nested_dir);
+        let found_marker = find_marker_file(None);
 
         // Verify that no marker file was found
         assert!(found_marker.is_none());

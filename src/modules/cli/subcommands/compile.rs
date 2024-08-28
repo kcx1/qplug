@@ -1,11 +1,7 @@
-use std::env;
-
 use crate::{files::find_marker_file, lua::parser::merge_lua_files};
 
 pub fn compile() {
-    let current_path = env::current_dir()
-        .expect("Unable to get current directory. Please check your permissions.");
-    let marker = find_marker_file(current_path.as_path());
+    let marker = find_marker_file(None);
     if marker.is_some() {
         let root_path = marker.unwrap();
         let plugin_path = root_path.join("plugin_src");
