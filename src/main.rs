@@ -47,6 +47,9 @@ fn main() {
         Some(("compile", _sub_matches)) => {
             cli::subcommands::compile::compile();
         }
+        Some(("check", _sub_matches)) => {
+            cli::subcommands::check::check();
+        }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
             let mut app = Command::new(APP_NAME);

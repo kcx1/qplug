@@ -44,6 +44,7 @@ pub fn cli() -> Command {
             Command::new("compile")
                 .about("Complie the plugin. Do not increment versioning or copy to plugin folder."),
         )
+        .subcommand(Command::new("check").about("check if current directory is a valid plugin."))
         //Generate shell completion
         .subcommand(
             Command::new("completions")
