@@ -17,6 +17,10 @@ pub fn cli() -> Command {
                 .arg_required_else_help(true)
                 .arg(
                     Arg::new("Enable Git")
+            Command::new("init")
+                .about("Initialize the current directory as a plugin.")
+                .arg(
+                    Arg::new("Disabe Git")
                         .long("no-git")
                         .default_value("false")
                         .action(ArgAction::SetTrue),
