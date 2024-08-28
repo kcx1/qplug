@@ -4,7 +4,6 @@ use mlua::Lua;
 use qplug::assets::INFO_LUA;
 use qplug::cli;
 use qplug::config::{Config, UserConfig};
-use qplug::lua::info::PluginInfo;
 use std::io::{self};
 
 fn create_lua_env() -> Lua {
