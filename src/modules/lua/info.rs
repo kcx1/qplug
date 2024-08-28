@@ -43,16 +43,31 @@ impl IntoIterator for PluginInfo {
 }
 
 impl PluginInfo {
-    pub fn get_struct(path: &PathBuf, lua: &Lua) -> Result<PluginInfo> {
+    pub fn from_file(file: &PathBuf, lua: &Lua) -> Result<PluginInfo> {
         let globals = lua.globals();
-        let info_file = fs::read_to_string(path)?;
+        let info_file = fs::read_to_string(file)?;
         lua.load(info_file.to_string()).exec()?;
 
         let info: PluginInfo = lua.from_value(globals.get("PluginInfo")?).unwrap();
         Ok(info)
     }
 
-    pub fn get_table(self, lua: &Lua) -> Table {
+    pub fn from_table(self, table: Table, lua: &Lua) -> Self {
+        let serialized_tbl = parser::serialize_table(lua, &table);
+        let globals = lua.globals();
+        lua.load(serialized_tbl).exec().unwrap();
+
+        let info: Self = lua
+            .from_value(
+                globals
+                    .get("PluginInfo")
+                    .expect("error parsing plugin info"),
+            )
+            .unwrap();
+        info
+    }
+
+    pub fn to_lua_table(self, lua: &Lua) -> Table {
         let table = lua.create_table().unwrap();
         for pairs in self.into_iter() {
             let (k, v) = pairs;
@@ -61,21 +76,46 @@ impl PluginInfo {
         table
     }
 
-    pub fn update(mut self, increment: VersionType) -> Result<PluginInfo> {
+    pub fn update_field(&mut self, field: &str, value: String) {
+        match field {
+            "Name" => self.name = value,
+            "Version" => self.version = value,
+            "BuildVersion" => self.build_version = value,
+            "Id" => self.id = value,
+            "Author" => self.author = value,
+            "Description" => self.description = value,
+            _ => eprintln!("Invalid field: {}", field),
+        }
+    }
+
+    pub fn get_field(&self, field: &str) -> String {
+        match field {
+            "Name" => self.name.to_string(),
+            "Version" => self.version.to_string(),
+            "BuildVersion" => self.build_version.to_string(),
+            "Id" => self.id.to_string(),
+            "Author" => self.author.to_string(),
+            "Description" => self.description.to_string(),
+            _ => panic!("Invalid field: {}", field),
+        }
+    }
+
+    pub fn update_version(mut self, increment: VersionType) -> Result<PluginInfo> {
         // self.id = Uuid::new_v4().to_string();
         self.build_version = PluginInfo::update_build_version(self.build_version, increment);
+        self.sync_version_with_build_version();
 
         Ok(self)
     }
 
-    pub fn write(self, path: PathBuf, lua: &Lua) -> Result<()> {
-        let table = parser::serialize_table(lua, &self.get_table(lua));
+    pub fn write_to_file(self, file: PathBuf, lua: &Lua) -> Result<()> {
+        let table = parser::serialize_table(lua, &self.to_lua_table(lua));
         let contents = name_table("PluginInfo", &table);
 
-        Ok(fs::write(path, contents)?)
+        Ok(fs::write(file, contents)?)
     }
 
-    pub fn update_build_version(version: String, increment: VersionType) -> String {
+    fn update_build_version(version: String, increment: VersionType) -> String {
         let mut ver: Vec<&str> = version.split('.').collect();
 
         match increment {
@@ -111,19 +151,29 @@ impl PluginInfo {
             }
         }
     }
+    fn sync_version_with_build_version(&mut self) {
+        let version_parts: Vec<&str> = self.build_version.split('.').collect();
+        if version_parts.len() >= 2 {
+            self.version = format!("{}.{}", version_parts[0], version_parts[1]);
+        } else {
+            self.version = self.build_version.clone();
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
+    use crate::assets::INFO_LUA;
+
     use super::*;
 
     #[test]
     fn test_get_info() {
         let lua = Lua::new();
-        PluginInfo::get_struct(&Path::new("./Api/plugin_src/info.lua").to_path_buf(), &lua)
-            .unwrap();
+        let info_file = INFO_LUA.clone().unwrap();
+        PluginInfo::from_file(&info_file, &lua).expect("info file not found");
     }
     #[test]
     fn test_update_major_build_number() {
@@ -158,10 +208,8 @@ mod tests {
     #[test]
     fn test_update_info() {
         let lua = Lua::new();
-        let info =
-            PluginInfo::get_struct(&Path::new("./Api/plugin_src/info.lua").to_path_buf(), &lua)
-                .unwrap();
-        let updated = info.clone().update(VersionType::Patch).unwrap();
+        let info = PluginInfo::from_file(&INFO_LUA.clone().unwrap(), &lua).unwrap();
+        let updated = info.clone().update_version(VersionType::Patch).unwrap();
 
         assert_ne!(&updated.build_version, &info.build_version);
         //Updated this to remain the same once created.
@@ -170,10 +218,10 @@ mod tests {
     #[test]
     fn test_write_info() {
         let lua = Lua::new();
-        let info_path = Path::new("./Api/plugin_src/info.lua");
-        let info = PluginInfo::get_struct(&info_path.to_path_buf(), &lua).unwrap();
+        let info_path = INFO_LUA.clone().unwrap();
+        let info = PluginInfo::from_file(&info_path.to_path_buf(), &lua).unwrap();
         info.clone()
-            .write(
+            .write_to_file(
                 Path::new("./Api/plugin_src/test_info.lua").to_path_buf(),
                 &lua,
             )
