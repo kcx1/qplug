@@ -4,6 +4,7 @@ use mlua::Lua;
 use qplug::assets::INFO_LUA;
 use qplug::cli;
 use qplug::config::{Config, UserConfig};
+use qplug::lua::info::PluginInfo;
 use std::io::{self};
 
 fn create_lua_env() -> Lua {
@@ -24,7 +25,7 @@ fn main() {
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
             let name = sub_matches.get_one::<String>("str").unwrap();
-            let no_git = sub_matches.get_one::<bool>("Enable Git").unwrap();
+            let no_git = sub_matches.get_one::<bool>("Disable Git").unwrap();
             cli::subcommands::new::create_plugin(name, no_git, &lua_env, &config);
         }
         Some(("init", sub_matches)) => {
