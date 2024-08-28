@@ -1,10 +1,13 @@
 [package]
 name = "qplug"
 version = "0.1.0"
+authors = ["Casey C <kcx1codes@gmail.com>"]
+description = "CLI toolchain for managing Q-Sys plugins"
+license = "GPL-3.0-or-later"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.5.11", features = ["derive"]}
+clap = { version = "4.5.11", features = ["derive", "help", "cargo", "color"]}
 clap_complete = "4.5.13"
 directories = "5.0.1"
 git2 = "0.19.0"
