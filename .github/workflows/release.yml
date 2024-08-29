@@ -38,6 +38,21 @@ jobs:
           toolchain: stable  # Install the latest stable version of Rust
           override: true      # Set this version as the default
 
+      - name: Install OpenSSL on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install openssl
+          echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
+
+      - name: Install OpenSSL on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libssl-dev
+
+      - name: Install OpenSSL on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install openssl
+
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
