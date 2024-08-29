@@ -221,10 +221,7 @@ mod tests {
         let info_path = INFO_LUA.clone().unwrap();
         let info = PluginInfo::from_file(&info_path.to_path_buf(), &lua).unwrap();
         info.clone()
-            .write_to_file(
-                Path::new("./Api/plugin_src/test_info.lua").to_path_buf(),
-                &lua,
-            )
+            .write_to_file(Path::new(&info_path).to_path_buf(), &lua)
             .unwrap();
     }
 }
