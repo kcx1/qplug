@@ -16,6 +16,7 @@ mlua = { version = "0.9.9", features = ["serialize", "lua54", "vendored"] }
 regex = "1.10.5"
 serde = { version = "1.0.204", features = ["derive"] }
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
+openssl = { version = "0.10", features = ["vendored"] }
 
 [dev-dependencies]
 tempfile = "3.10.1"
