@@ -33,10 +33,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable  # Install the latest stable version of Rust
-          override: true      # Set this version as the default
+            targets: ${{ matrix.target }}
 
       - name: Install OpenSSL on macOS
         if: matrix.os == 'macos-latest'
