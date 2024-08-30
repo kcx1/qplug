@@ -38,23 +38,23 @@ jobs:
         with:
             targets: ${{ matrix.target }}
 
-      - name: Install OpenSSL on macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          arch -x86_64 brew install openssl@1.1
-          echo "OPENSSL_DIR=$(arch -x86_64 brew --prefix openssl@1.1)" >> $GITHUB_ENV
-          echo "OPENSSL_LIBDIR=$(arch -x86_64 brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=$(arch -x86_64 brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$(arch -x86_64 brew --prefix openssl@1.1)/lib/pkgconfig" >> $GITHUB_ENV
-
-      - name: Install OpenSSL on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libssl-dev
-
-      - name: Install OpenSSL on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install openssl
+      # - name: Install OpenSSL on macOS
+      #   if: matrix.os == 'macos-latest'
+      #   run: |
+      #     arch -x86_64 brew install openssl@1.1
+      #     echo "OPENSSL_DIR=$(arch -x86_64 brew --prefix openssl@1.1)" >> $GITHUB_ENV
+      #     echo "OPENSSL_LIBDIR=$(arch -x86_64 brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
+      #     echo "OPENSSL_INCLUDE_DIR=$(arch -x86_64 brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
+      #     echo "PKG_CONFIG_PATH=$(arch -x86_64 brew --prefix openssl@1.1)/lib/pkgconfig" >> $GITHUB_ENV
+      #
+      # - name: Install OpenSSL on Ubuntu
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: sudo apt-get install -y libssl-dev
+      #
+      # - name: Install OpenSSL on Windows
+      #   if: matrix.os == 'windows-latest'
+      #   run: |
+      #     choco install openssl
 
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
