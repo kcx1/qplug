@@ -32,7 +32,7 @@ pub fn cli() -> Command {
                 .arg(arg!(<str> "Name of the plugin."))
                 .arg_required_else_help(true)
                 .arg(
-                    Arg::new("Disabe Git")
+                    Arg::new("Disable Git")
                         .long("no-git")
                         .default_value("false")
                         .action(ArgAction::SetTrue),
@@ -42,7 +42,7 @@ pub fn cli() -> Command {
             Command::new("init")
                 .about("Initialize the current directory as a plugin.")
                 .arg(
-                    Arg::new("Disabe Git")
+                    Arg::new("Disable Git")
                         .long("no-git")
                         .default_value("false")
                         .action(ArgAction::SetTrue),
