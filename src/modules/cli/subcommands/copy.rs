@@ -9,6 +9,7 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     let plugin_dir = docs.join("QSC/Q-Sys Designer/Plugins");
     let marker_file = find_marker_file(None).expect("You might not be in a plugin directory.");
 
+    println!("Copying plugin to {}", plugin_dir.display());
     std::fs::copy(
         marker_file.join(format!("{:?}.lua", marker_file.file_name())),
         plugin_dir,
@@ -17,5 +18,5 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
 
 #[cfg(not(windows))]
 pub fn copy_to_plugin_directory() {
-    //no-op
+    println!("Not on windows, not copying to plugin directory");
 }
