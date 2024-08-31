@@ -12,7 +12,7 @@ use uuid::Uuid;
 use crate::{
     assets::{DEFINITIONS_DIR, INFO_LUA},
     config::{Config, Template},
-    files::{copy_dir, create_marker_file},
+    files::{self, copy_dir, create_marker_file},
     lua::info::PluginInfo,
 };
 
@@ -51,9 +51,17 @@ pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
         .to_string();
 
     // Write the info.lua file
+    let info_lua_file = files::find_file_recursively(&plugin_path, "info.lua");
     let info = get_user_info(plugin_name, None, config);
-    info.write_to_file(INFO_LUA.clone().unwrap(), lua)
-        .expect("Failed to write info.lua");
+    match info_lua_file {
+        Some(file) => {
+            info.write_to_file(file, lua)
+                .expect("Failed to write info.lua");
+        }
+        None => {
+            eprintln!("Could not find template info.lua. If you would like qplug to update it when building, please create one.");
+        }
+    }
 
     create_marker_file(root_path);
     add_lua_defs(root_path);

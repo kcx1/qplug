@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{self, PathBuf},
+};
 
 use mlua::{Lua, Table, Value};
 use regex::{Captures, Regex};
@@ -60,7 +63,9 @@ pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Res
     let plugin_name = root_path
         .file_name()
         .expect("Failed to parse plugin name from path");
-    let qplug_file = root_path.join(format!("{:?}.lua", plugin_name));
+    let qplug_file = root_path.join(std::path::PathBuf::from(
+        plugin_name.to_str().expect("Oops").to_string() + ".qplug",
+    ));
 
     // Read the skeleton Lua file
     let mut init_content = fs::read_to_string(init_file)?;
