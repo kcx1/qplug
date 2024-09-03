@@ -44,6 +44,9 @@ fn main() {
                 .unwrap();
             cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), &lua_env)
         }
+        Some(("copy", _sub_matches)) => {
+            cli::subcommands::copy::copy_to_plugin_directory();
+        }
         Some(("compile", _sub_matches)) => {
             cli::subcommands::compile::compile();
         }

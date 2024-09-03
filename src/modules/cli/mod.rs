@@ -73,6 +73,7 @@ pub fn cli() -> Command {
                         .ignore_case(true),
                 ),
         )
+        .subcommand(Command::new("copy").about("Copy the plugin to the plugin folder."))
         .subcommand(
             Command::new("compile")
                 .about("Complie the plugin. Do not increment versioning or copy to plugin folder."),
