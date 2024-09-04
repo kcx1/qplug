@@ -9,10 +9,14 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     let plugin_dir = docs.join("QSC").join("Q-Sys Designer").join("Plugins");
     let marker_file = find_marker_file(None).expect("You might not be in a plugin directory.");
 
-    println!("Copying plugin to {}", plugin_dir.display());
-
     let source_file = marker_file.join(format!("{:?}.qplug", marker_file.file_name()));
     let destination = plugin_dir.join(format!("{:?}.qplug", marker_file.file_name()));
+
+    println!(
+        "Copying from {} to {}",
+        source_file.display(),
+        destination.display()
+    );
 
     match source_file.exists() {
         true => std::fs::copy(source_file, destination),
