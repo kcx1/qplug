@@ -8,9 +8,12 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     let docs = user_dir.document_dir().expect("Unable to locate docs dir.");
     let plugin_dir = docs.join("QSC").join("Q-Sys Designer").join("Plugins");
     let marker_file = find_marker_file(None).expect("You might not be in a plugin directory.");
+    let file_name = marker_file
+        .file_name()
+        .expect("Compiled qplug file not found. Please build or compile it first.");
 
-    let source_file = marker_file.join(format!("{:?}.qplug", marker_file.file_name()));
-    let destination = plugin_dir.join(format!("{:?}.qplug", marker_file.file_name()));
+    let source_file = marker_file.join(format!("{:?}.qplug", file_name));
+    let destination = plugin_dir.join(format!("{:?}.qplug", file_name));
 
     println!(
         "Copying from {} to {}",
@@ -18,13 +21,7 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
         destination.display()
     );
 
-    match source_file.exists() {
-        true => std::fs::copy(source_file, destination),
-        false => {
-            println!("Compiled qplug file not found. Please build or compile it first.");
-            Ok(0)
-        }
-    }
+    std::fs::copy(source_file, destination)
 }
 
 #[cfg(not(windows))]
