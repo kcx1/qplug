@@ -10,7 +10,7 @@ use mlua::Lua;
 use uuid::Uuid;
 
 use crate::{
-    assets::{DEFINITIONS_DIR, INFO_LUA},
+    assets::DEFINITIONS_DIR,
     config::{Config, Template},
     files::{self, copy_dir, create_marker_file},
     lua::info::PluginInfo,

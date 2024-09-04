@@ -1,7 +1,4 @@
-use std::{
-    fs,
-    path::{self, PathBuf},
-};
+use std::{fs, path::PathBuf};
 
 use mlua::{Lua, Table, Value};
 use regex::{Captures, Regex};
@@ -79,9 +76,6 @@ pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Res
     Ok(())
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-/// Tests
-//////////////////////////////////////////////////////////////////////////////////////////
 #[cfg(test)]
 mod tests {
 

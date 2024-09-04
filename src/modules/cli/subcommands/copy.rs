@@ -2,7 +2,7 @@ use directories;
 
 use crate::files::find_marker_file;
 
-// #[cfg(windows)]
+#[cfg(windows)]
 pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     let user_dir = directories::UserDirs::new().expect("Unable to locate user dir.");
     let docs = user_dir.document_dir().expect("Unable to locate docs dir.");
