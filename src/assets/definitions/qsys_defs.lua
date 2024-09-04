@@ -30,64 +30,71 @@
      Please consider donating for more work and projects: https://www.paypal.com/donate?hosted_button_id=7RTFJYWREF8PW&source=url
  ]]
 
----Component object
-Component = {}
----Component class functions
----Create a Named Component reference in your script.
-function Component:New() end
----Create a Named Component reference in your script by name referecene
-function Component:New(Name)
-	Component = Name
-end
----Returns a table of all controls in the specified Named Component.
-function Component:GetControls() end
-
----Create a Control IO object
-Controls = {
-	---Rappresent an input
-	Inputs = {
-		[1] = {
-			---Floating point value of control. If you pass in a Boolean ( like Controls.Outputs[1].Value = true ) it is converted to either a 0 ( false ) or 1 ( true ).
-			Value = 0,
-			---Table of floating point values of controls. Only used when connected to controls that create tables of values such as the 2D panner, RTA - Band-Pass or Responsalyzer, Meters.
-			Values = {},
-			---floating point position which goes from 0.0 -> 1.0
-			Position = 0,
-			---Control input string
-			String = "",
-			---returns true if the position of the control is >0.5
-			Boolean = false,
-			---index of control.
-			Index = 1,
-		},
-	},
-	---Rappresent an output
-	Outputs = {
-		[1] = {
-			---floating point value of control
-			Value = 0,
-			---floating point position which goes from 0.0 -> 1.0
-			Position = 0,
-			---string representation of control value
-			String = "",
-			---defaults to 0 seconds
-			RampTime = 0,
-			---index of control
-			Index = 1,
-			---string representing the Legend of a button or a fader.
-			Legend = "",
-		},
-	},
-
-	IsInvisible = false,
-	IsDisabled = false,
-	IsIndeterminate = false,
-	---Set the control color
-	Color = "",
-	---List of choices for a control
-	Choices = {},
-	Legend = "",
+---@enum UserControls
+local UserControls = {
+	-- Some Controls
 }
+
+--- Represents a control object in Q-SYS.
+---@class Control
+---@field String string
+---@field Value number
+---@field Position number
+---@field Boolean boolean
+---@field Choices table<number, string>
+---@field Color string Color of the control
+---@field CssClass string
+---@field IsDisabled boolean is the control disabled
+---@field IsIndeterminate boolean is the control in an indeterminate state
+---@field IsInvisible boolean Is the control invisible
+---@field Legend string Legend of the Control
+---@field RampTime number time in seconds to ramp to the new value
+Control = {}
+
+--- Function which is called when any control property changes
+---@param self Control
+function Control:EventHandler() end
+
+---@type table<string, Control | table<number, Control>>
+Controls = {}
+
+-- Should probably write an enum for Type
+
+---@class ComponentProperties
+---@field Value any
+---@field String string
+---@field Position number
+---@field Type string
+---@field Direcetion string
+---@field MinValue number
+---@field MaxValue number
+---@field MinString string
+---@field MaxString string
+ComponentProperties = {}
+
+---@class Components
+---@field Name string
+---@field Properties ComponentProperties
+
+--- Represents a component object in Q-SYS.
+---@class Component
+Component = {}
+
+--- Creates a new Component instance with a specified name.
+--- @param Name string The name of the component
+--- @return self Component # The newly created Component instance
+function Component:New(Name)
+	return self
+end
+
+--- Return a table of all Named Components in the design and their properties.
+---@return table<number, Components> Components
+function Component.GetComponents() end
+
+--- Returns a table of all controls in the specified Named Component.
+---@param Name string The name of the component
+---@return table<string, Control> Components A table where keys are control names and values are ControlInputOutput objects
+function Component.GetControls(Name) end
 
 ---called when input value changes
 function Controls.EventHandler() end
