@@ -11,13 +11,13 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
 
     println!("Copying plugin to {}", plugin_dir.display());
 
-    let source_file = marker_file.join(format!("{:?}.lua", marker_file.file_name()));
-    let destination = plugin_dir.join(format!("{:?}.lua", marker_file.file_name()));
+    let source_file = marker_file.join(format!("{:?}.qplug", marker_file.file_name()));
+    let destination = plugin_dir.join(format!("{:?}.qplug", marker_file.file_name()));
 
     match source_file.exists() {
         true => std::fs::copy(source_file, destination),
         false => {
-            println!("Source file not found");
+            println!("Compiled qplug file not found. Please build or compile it first.");
             Ok(0)
         }
     }
