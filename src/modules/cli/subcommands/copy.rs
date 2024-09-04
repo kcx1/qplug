@@ -10,10 +10,17 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     let marker_file = find_marker_file(None).expect("You might not be in a plugin directory.");
 
     println!("Copying plugin to {}", plugin_dir.display());
-    std::fs::copy(
-        marker_file.join(format!("{:?}.lua", marker_file.file_name())),
-        plugin_dir.join(format!("{:?}.lua", marker_file.file_name())),
-    )
+
+    let source_file = marker_file.join(format!("{:?}.lua", marker_file.file_name()));
+    let destination = plugin_dir.join(format!("{:?}.lua", marker_file.file_name()));
+
+    match source_file.exists() {
+        true => std::fs::copy(source_file, destination),
+        false => {
+            println!("Source file not found");
+            Ok(0)
+        }
+    }
 }
 
 #[cfg(not(windows))]
