@@ -21,7 +21,7 @@ impl UserData for VersionType {}
 pub fn build(version: VersionType, info_path: PathBuf, lua: &Lua) {
     update_version(version, info_path, lua);
     compile();
-    copy_to_plugin_directory();
+    copy_to_plugin_directory().expect("Could not copy plugin");
 }
 
 fn update_version(version: VersionType, info_path: PathBuf, lua: &Lua) {
