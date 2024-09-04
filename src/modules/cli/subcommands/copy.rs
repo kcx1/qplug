@@ -12,7 +12,7 @@ pub fn copy_to_plugin_directory() -> Result<u64, std::io::Error> {
     println!("Copying plugin to {}", plugin_dir.display());
     std::fs::copy(
         marker_file.join(format!("{:?}.lua", marker_file.file_name())),
-        plugin_dir,
+        plugin_dir.join(format!("{:?}.lua", marker_file.file_name())),
     )
 }
 
