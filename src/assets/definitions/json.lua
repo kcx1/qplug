@@ -3,8 +3,8 @@
 
 ---Use the JSON module to encode and decode Lua tables to and from JSON strings.
 ---For faster performance, and to avoid raising execution count errors with large amounts of data, use RapidJSON instead.
----@class json
-json = {}
+---@module 'json'
+local json
 
 ---Returns the Lua object JSON encoded into a string.
 ---@param lua_object any lua object

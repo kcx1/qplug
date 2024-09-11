@@ -7,6 +7,7 @@ local UserControls = {
 }
 
 --- Represents a control object in Q-SYS.
+--- @see Controls
 ---@class Control
 ---@field String string
 ---@field Value number
@@ -20,12 +21,12 @@ local UserControls = {
 ---@field IsInvisible boolean Is the control invisible
 ---@field Legend string Legend of the Control
 ---@field RampTime number time in seconds to ramp to the new value
----@package
-Control = {}
+---@field EventHandler fun(self: Control) Function which is called when any control property changes
 
---- Function which is called when any control property changes
----@param self Control
-function Control:EventHandler() end
+---@alias controlDict table<string, Control>
+---@alias controlArray table<number, Control>
+---@alias controlDictArrays table<string, controlArray>
 
----@type table<string, Control | table<number, Control>>
+---Q-Sys Control table.
+---@type controlDict | controlArray | controlDictArrays
 Controls = {}

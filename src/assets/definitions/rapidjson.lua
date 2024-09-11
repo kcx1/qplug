@@ -4,15 +4,8 @@
 ---Use the RapidJSON module to encode and decode large documents quickly.
 ---It is similar to the standard JSON module, but can handle large amounts of data without risk of raising execution count errors.
 ---To use the RapidJSON module, add the following line to your script: rapidjson = require("rapidjson")
----@class rapidjson
----@field _NAME string
----@field _VERSION string
-rapidjson = {
-	---@private
-	_NAME = "rapidjson",
-	---@private
-	_VERSION = "scm",
-}
+---@module 'rapidjson'
+local rapidjson
 
 ---@class JsonOptions
 ---@field pretty boolean Set true to make output string to be pretty formated. Default is false.
@@ -50,3 +43,27 @@ function rapidjson.object(table) end
 
 ---Same as rapidjson.object(), except the metatable field __jsontype is set as 'array'. The encode and dump function will encode it as JSON array.
 function rapidjson.array() end
+
+---Ai Generated
+---@class SchemaDocument
+---@field schema table A Lua table representation of a JSON schema.
+
+---Ai Generated
+---Creates a SchemaDocument from Document or a Lua table or a string contains a JSON schema.
+---@param doc? SchemaDocument|table|string The the JSON schema stored in rapidjson.Document object, or a Lua table representation of a JSON schema, or a string contains a JSON schema.
+function rapidjson.SchemaDocument(doc) end
+
+---Ai Generated
+---@class SchemaValidator
+---SchemaValidator is used to validate a document against a json-schema.
+---@field schema table A Lua table representation of the JSON schema.
+SchemaValidator = {}
+---Creates a SchemaValidator from a Schema Document
+---@param sd? SchemaDocument The SchemaDocument to create the validator. SchemaDocument can be shared by schema validators.
+function rapidjson.SchemaValidator(sd) end
+
+---Ai Generated
+---Validates a JSON document.
+---@param value table A JSON document to be validated against the schema stored inside the validator.
+---@return boolean valid Whether the document is valid and an error message if invalid (or nil if no message).
+function SchemaValidator:validate(value) end

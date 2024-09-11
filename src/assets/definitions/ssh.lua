@@ -1,0 +1,196 @@
+---@meta
+---@diagnostic disable: missing-return, unused-local
+
+---The Ssh object allows Q-SYS cores to make client SSH connections to devices on the network.
+---
+---# Example:
+---
+---## Without PKI:
+---```lua
+----- Aliases
+---IPAddress = Controls.IPAddress
+---UserName = Controls.UserName
+---Password = Controls.Password
+---
+---
+----- Constants
+---SSH = Ssh.New()  -- create new SSH object
+---SSH.ReadTimeout = 5  -- set read timeout to 5 seconds
+---SSH.WriteTimeout = 5  -- set write timeout to 5 seconds
+---SSH.ReconnectTimeout = 5  -- set reconnect timeout to 5 seconds
+---Port = 22  -- port of the SSH server
+---
+---
+----- Functions
+---function CredentialsEntered()  -- returns true if ip, user name and password have been entered
+---  return IPAddress.String~="" and UserName.String~="" and Password.String~=""
+---end
+---
+---function Connect()  -- function to start the SSH session
+---  if SSH.IsConnected then SSH:Disconnect() end  -- if SSH is connected disconnect
+---  if CredentialsEntered() then SSH:Connect(IPAddress.String,Port,UserName.String,Password.String) end  -- if all credentials are entered attempt to connect
+---end
+---
+---function Initialization()  -- function called at start of runtime
+---  print("Initializing plugin")
+---  Connect()
+---end
+---
+-----Parsers
+---function ParseResponse()  -- function that reads the SSH TCP socket
+---  local rx=SSH:Read(SSH.BufferLength)  -- assign the contents of the buffer to a variable
+---  print("RX: "..rx)
+---end
+---
+---
+----- SSH socket callbacks
+---SSH.Connected=function()  -- function called when the TCP socket is connected
+---  print("Socket connected")
+---end
+---
+---SSH.Reconnect=function()  -- function called when the TCP socket is reconnected
+---  print("Socket reconnecting...")
+---end
+---
+---SSH.Closed=function() -- function called when the TCP socket is closed
+---  print("Socket closed")
+---end
+---
+---SSH.Error=function()  -- function called when the TCP socket has an error
+---  print("Socket error")
+---end
+---
+---SSH.Timeout=function()  -- function called when the TCP socket times out
+---  print("Socket timeout")
+---end
+---
+---SSH.LoginFailed=function()  -- function called when SSH login fails
+---  print("SSH login failed")
+---end
+---
+---SSH.Data=ParseResponse  -- ParseResponse is called when the SSH object has data
+---
+---
+----- EventHandlers
+---IPAddress.EventHandler = Connect
+---UserName.EventHandler = Connect
+---Password.EventHandler = Connect
+---
+---
+----- Start at runtime---
+---```
+---
+---## With PKI:
+---```lua
+---ssh = Ssh.New()
+---address = "192.0.2.1"
+---port = 22
+---user = "root"
+---
+----- public key
+---ssh.PublicKey = [[-----BEGIN OPENSSH PUBLIC KEY-----
+---b3BlbnNzaC1rZXktdjEAAAAACmFlczI...oHGKwgQgWhXiCRTkcURNyAbm
+---JCLc/fsC6QbYNxfGRIMrz123456manPJcf/4fdlG123456789ygXGYSLAY8dEmod2E
+---vCcO0lShYHwr4ROA==
+--------END OPENSSH PUBLIC KEY-----]]
+---
+----- private key in OpenSSL PEM format
+---ssh.PrivateKey = [[-----BEGIN OPENSSH PRIVATE KEY-----
+---b3BlbnNzaC1rZXktdjEAAAAACmFlczI...oHGKwgQgWhXiCRTkcURNyAbm
+---JCLc/fsC6QbYNxfGRIMrz123456manPJcf/4fdlG123456789ygXGYSLAY8dEmod2E
+---vCcO0lShYHwr4ROA==
+--------END OPENSSH PRIVATE KEY-----]]
+---ssh.PrivateKeyPassword = "test@123"
+---
+---timer = Timer.New()
+---timer.EventHandler = function()
+---    ssh:Write("date && hostname\n")
+---end
+---
+---ssh.Connected = function()
+---    print("ssh connected")
+---    timer:Start(10)
+---end
+---
+---ssh.Reconnect = function()
+---    print("ssh reconnect")
+---end
+---
+---ssh.Data = function()
+---    print("ssh data")
+---    line = ssh:ReadLine(TcpSocket.EOL.Any)
+---    while line do
+---        print(line)
+---        line = ssh:ReadLine(TcpSocket.EOL.Any)
+---    end
+---end
+---
+---ssh.Closed = function()
+---    print("ssh closed")
+---    timer:Stop()
+---end
+---
+---ssh.Error = function(s, err)
+---    print("ssh error", err)
+---end
+---
+---ssh.Timeout = function()
+---    print("ssh timeout")
+---end
+---
+---ssh.LoginFailed = function()
+---    print("ssh LoginFailed")
+---end
+---
+---ssh:Connect(address, port, user, "")
+---```
+---@class Ssh
+---PKI Methods
+---@field PublicKey string ssh.PublicKey = "<algorithm> <key> <comment>"
+---@field PrivateKey string ssh.PrivateKey = [[-----BEGIN OPENSSH PRIVATE KEY----- <key> -----END OPENSSH PRIVATE KEY-----]]---@field Certificate string ssh.Certificate = "<algorithm> <key> <comment>"
+---@field PrivateKeyPassword string The password used in conjunction with a private key (if the private key is password-protected).
+---@field Certificate string Use for certificate-based access
+---Properties
+---@field ReadTimeout number Time, in seconds, to wait for data to be available on socket before raising an Error through the EventHandler.
+---@field WriteTimeout number Time, in seconds, to wait for data write to complete before raising an Error through the EventHandler.
+---@field ReconnectTimeout number Time in seconds to wait before attempting to reconnect. 0 disables automatic reconnect.
+---@field IsConnected boolean Returns true if socket is connected
+---@field IsInteractive? boolean Some devices require "interactive mode" for SSH connections, which opens a PTY (Pseudoterminal). Set this property to 'true' if your device requires this. See the example SSH with 'interactive mode' enabled.
+---@field BufferLength number Amount of data in buffer, in bytes
+--- Tables
+---@field EOL EndOfLine
+---@field Events Events
+---Methods
+---@field Disconnect fun(sock: Ssh) Disconnects the socket.
+---@field Write fun(sock: Ssh, data: string) Writes data to the socket.
+---@field Read fun(sock: Ssh, len: number) Reads data from the socket.
+---Callbacks
+---@field LoginFailed fun(sock: Ssh, err: any)
+---@field Connected fun(sock: Ssh)
+---@field Reconnect fun(sock: Ssh)
+---@field Data fun(sock: Ssh)
+---@field Closed fun(sock: Ssh)
+---@field Error fun(sock: Ssh, err: any)
+---@field Timeout fun(sock: Ssh, err: any)
+Ssh = {}
+
+---Creates a new Ssh instance.
+---@return Ssh
+function Ssh.New() end
+
+---Attempts to connect to the specified ip/host name and port, 'ipAddress/hostname' is string, 'port' is integer. This method also accepts username and password parameters for authentication.
+---@param host string ip_address or host_name of server
+---@param port number control port
+---@param user string SSH user name
+---@param password string SSH password Note: When using PKI authentication, the password field is ignored but currently required. See PKI Authentication Methods.
+function Ssh:Connect(host, port, user, password) end
+
+---Searches the socket buffer for string 'str' (starting at integer 'start_pos') and returns the index of where 'str' is found. 'start_pos' defaults to 1.
+---@param str string string or pattern to find in buffer
+---@param start_pos integer? optional index where to start search, default value is 1
+function Ssh:Search(str, start_pos) end
+
+---Reads a line of output from the remote host. 'EOL' is defined in the table below. '<custom>' is an optional string only used by EOL.Custom.
+---@param EOL EndOfLine see associated table for values
+---@param custom string? if EOL.Custom is used this variable contains the custom value
+function Ssh:ReadLine(EOL, custom) end
