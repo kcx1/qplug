@@ -1,0 +1,139 @@
+---@meta
+---@diagnostic disable: missing-return, unused-local
+
+---@class HMS Hour, Minute, Second
+---@field hour number default 0
+---@field min number default 0
+---@field sec number default 0
+
+---@enum MonthNames
+---| "January" | "Jan"
+---| "February" | "Feb"
+---| "March" | "Mar"
+---| "April" | "Apr"
+---| "May" | "May"
+---| "June" | "Jun"
+---| "July" | "Jul"
+---| "August" | "Aug"
+---| "September" | "Sep"
+---| "October" | "Oct"
+---| "November" | "Nov"
+---| "December" | "Dec"
+
+---@class YMD Year, Month, Day
+---@field year integer
+---@field month number | MonthNames
+---@field day integer 1-31
+
+---@alias num_time number Represents the number of seconds in Universal Coordinated Time between the specified value and the System epoch.
+---@alias table_date HMS | YMD Required table value. Time (hour,,min, sec, or msec) must be supplied if date (year, month, and day) is not given, vice versa. The constructor will look for the value of this key
+---@alias str_date string Required string value. It must have number / words representing date and / or time. Use commas and spaces as delimiters. Strings enclosed by parenthesis is treated as a comment and is ignored. The stated day of the week is ignored whether its correct or not. A string containing an invalid date is an error. For example, a string containing two years or two months is an error. Time must be supplied if date is not given, vice versa.
+---@alias bool_now boolean Required boolean value. if bool_now is false it returns the current local date and time. If bool_now is true it returns the current UTC date and time.
+
+---AI Generated - please forgive any issues if you find them.
+---@class DateObject
+---@field adddays fun(number): void Adds days to the date object.
+---@field addhours fun(number, boolean?): void Adds hours to the date object.
+---@field addminutes fun(number, boolean?): void Adds minutes to the date object.
+---@field addmonths fun(number, boolean?): void Adds months to the date object.
+---@field addseconds fun(number, boolean?): void Adds seconds to the date object.
+---@field addticks fun(number, boolean?): void Adds ticks in milliseconds since midnight to the date object.
+---@field addyears fun(number, boolean?): void Adds years to the date object.
+---@field copy fun(): DateObject Returns a copy of the date object.
+---@field fmt fun(...): string Formats the date as a string according to the given format.
+---@field getbias fun(): number Returns the time zone bias.
+---@field getclockhour fun(): number Returns the 24-hour clock hour.
+---@field getdate fun(): string Gets the date as a string.
+---@field getday fun(): number Returns the day of the week.
+---@field getfracsec fun(): number Returns the fractional seconds.
+---@field gethours fun(): number Returns the 24-hour clock hour.
+---@field getisoweekday fun(): number Returns the ISO week day.
+---@field getisoweeknumber fun(): number Returns the ISO week number.
+---@field getisoyear fun(): number Returns the ISO year.
+---@field getminutes fun(): number Returns the minute of the hour.
+---@field getweekday fun(): number Returns the day of the week.
+---@field getweeknumber fun(): number Returns the week number.
+---@field getyear fun(): number Returns the year.
+---@field getyearday fun(): number Returns the day of the year.
+---@field setday fun(number): void Sets the day of the date.
+---@field sethours fun(number): void Sets the hour of the date.
+---@field setisoweekday fun(number): void Sets the ISO week day.
+---@field setisoweeknumber fun(number): void Sets the ISO week number.
+---@field setisoyear fun(number): void Sets the ISO year.
+---@field setminutes fun(number): void Sets the minute of the hour.
+---@field setmonth fun(number): void Sets the month.
+---@field setseconds fun(number): void Sets the second of the minute.
+---@field setticks fun(number): void Sets the tick count.
+---@field setyear fun(number): void Sets the year.
+---@field spandays fun(number, boolean?): void Spans days by adding or subtracting from the current date.
+---@field spanhours fun(number, boolean?): void Spans hours by adding or subtracting from the current date.
+---@field spanminutes fun(number, boolean?): void Spans minutes by adding or subtracting from the current date.
+---@field spanseconds fun(number, boolean?): void Spans seconds by adding or subtracting from the current date.
+---@field spanticks fun(number, boolean?): void Spans ticks by adding or subtracting from the current date.
+---@field tolocal fun(): string Converts to local time as a string.
+---@field toutc fun(): number Converts to UTC time as a number.
+
+---@alias void nil
+
+---
+---Example:
+---```lua
+---local date = require "date"
+-- prints all FRIDAY the 13TH dates between year 2000 and 2010
+---for i = 2000, 2010 do
+---        -- year jan 1
+---        x = date(i, 1, 1)
+---        -- from january to december
+---        for j = 1, 12 do
+---                -- set date to 13, check if friday
+---                if x:setmonth(j, 13):getweekday() == 6 then
+---                        print(x:fmt("%A, %B %d %Y"))
+---                end
+---        end
+---end
+---```
+---@module 'date'
+---Arguments
+---num_time: Required number value. Represents the number of seconds in Universal Coordinated Time between the specified value and the System epoch.
+---
+---tbl_date: Required table value. Time (hour,,min, sec, or msec) must be supplied if date (year, month, and day) is not given, vice versa. The constructor will look for the value of this key:
+---
+---year- an integer, the full year, for example, 1969. Required if month and day is given.
+---month - a parsable month value. Required if year and day is given.
+---day - an integer, the day of month from 1 to 31. Required if year and month is given.
+---hour - a number, hours value, from 0 to 23, indicating the number of hours since midnight. (default = 0).
+---min - a number, minutes value, from 0 to 59. (default = 0).
+---sec - a number, seconds value, from 0 to 59. (default = 0).
+---str_date: Required string value. It must have number / words representing date and / or time. Use commas and spaces as delimiters. Strings enclosed by parenthesis is treated as a comment and is ignored. The stated day of the week is ignored whether its correct or not. A string containing an invalid date is an error. For example, a string containing two years or two months is an error. Time must be supplied if date is not given, vice versa.
+---
+---Time Format: Hours, minutes, and seconds are separated by colons, although all need not be specified. "10:", "10:11", and "10:11:12" are all valid. If the 24-hour clock is used, it is an error to specify "PM" for times later than 12 noon. For example, "23:15 PM" is an error.
+---Time Zone Format: First character is a sign "+" (east of UTC) or "-" (west of UTC). Hours and minutes offset are separated by colons.
+---Example: assert( date("Jul 27 2006 03:56:28 +2:00") == date(2006,07,27,1,56,28))
+---Another format is [sign][number] If [number] is less than 24, it is the offset in hours e.g. "-10" = -10 hours. Otherwise it is the offset in hundred hours e.g. "+75" = "+115" = +1.25 hours.
+---Examples: assert(date("Jul 27 2006 -75 ") == date(2006,07,27,1,15,0)), Or assert(date("Jul 27 2006 -115") == date(2006,07,27,1,15,0)).
+---bool_now: Required boolean value. if bool_now is false it returns the current local date and time. If bool_now is true it returns the current UTC date and time.
+---
+---int_year: Required integer value. The year value.
+---
+---var_month: Required. A parsable month value.
+---
+---int_day: Required integer value. The day of month.
+---
+---num_hour: Optional number value. Equal to the hours value. The default value is 0.
+---
+---num_min: Optional number value. Equal to the minutes value. The default value is 0.
+---
+---num_sec: Optional number value. Equal to the seconds value. The default value is 0.
+---
+---int_ticks: Optional integer value. Equal to the ticks value. The default value is 0.
+---
+---Returns
+---The resulting dateObject if successful.
+---
+---Returns nil in case of error.
+---@class date
+---@field _call fun(time: number|str_date|table_date|bool_now): DateObject?
+---@field diff fun(var_date_1: DateObject, var_date_2: number|str_date|table_date|bool_now): DateObject? Subtracts the date and time value of two dateObject and returns the resulting dateObject.
+---@field epoch fun(): DateObject? Returns the System epoch.
+---@field isleapyear fun(var_year: DateObject | number | str_date | table_date | bool_now): boolean Returns true if year is a leap year.
+date = {}
