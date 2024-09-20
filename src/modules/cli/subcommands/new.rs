@@ -18,37 +18,81 @@ use crate::{
 
 const PLUGIN_ROOT: &str = "plugin_src";
 
-pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
+pub fn create_plugin(
+    name: Option<&String>,
+    no_git: &bool,
+    no_template: &bool,
+    no_defs: &bool,
+    lua: &Lua,
+    config: &Config,
+) {
+    // Check if name was provided - if not set name to parent directory
+    let file_name: &String = match name {
+        Some(name) => {
+            // Fail if the plugin already exists.
+            if Path::exists(Path::new(&name))
+                || Path::exists(&Path::new(&name).join(PLUGIN_ROOT))
+                || Path::exists(Path::new(".qplug"))
+            {
+                eprint!("The plugin already exists.");
+                exit(1);
+            }
+            name
+        }
+        None => {
+            if Path::exists(&Path::new(".").join(PLUGIN_ROOT)) || Path::exists(Path::new(".qplug"))
+            {
+                eprint!("The plugin already exists.");
+                exit(1);
+            }
+            &".".to_string()
+        }
+    };
     // Setup plugin path
-    let root_path = Path::new(name);
+    let root_path = Path::new(&file_name);
     let plugin_path = root_path.join(PLUGIN_ROOT);
 
-    // Fail if the plugin already exists.
-    if Path::exists(root_path) || Path::exists(&plugin_path) {
-        eprint!("The plugin already exists.");
-        exit(1);
-    }
     // Create plugin directories
     fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
 
     // fetch the template based on the user's config. Default to internal template if none set.
     fetch_template(&plugin_path, &config.template);
 
+    if !no_template {
+        fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
+        fetch_template(plugin_path.as_path(), &config.template);
+        println!("Template initialized");
+    }
+
+    if !no_defs {
+        add_lua_defs(root_path);
+        println!("Definitions initialized");
+    }
+
     // Init git repo
     if !no_git {
         init_git(root_path);
         println!("Git initialized");
     }
-    println!("New plugin created: {}", name);
 
     // If name was set as a path, use the last part
-    let plugin_name: &String = &name
+    let plugin_name = &file_name
         .split('/')
         .collect::<Vec<&str>>()
         .last()
         .unwrap()
         .to_owned()
         .to_string();
+
+    // Print Creation Confirmation
+    if plugin_name == "." {
+        println!(
+            "New plugin created: {:?}",
+            std::env::current_dir().unwrap().file_name().unwrap()
+        );
+    } else {
+        println!("New plugin created: {}", plugin_name);
+    }
 
     // Write the info.lua file
     let info_lua_file = files::find_file_recursively(&plugin_path, "info.lua");
@@ -64,7 +108,6 @@ pub fn create_plugin(name: &String, no_git: &bool, lua: &Lua, config: &Config) {
     }
 
     create_marker_file(root_path);
-    add_lua_defs(root_path);
 }
 
 //TODO: Cleanup signature - Returns not currently being used.

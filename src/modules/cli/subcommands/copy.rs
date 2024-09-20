@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use directories;
 
 use crate::files::find_marker_file;
