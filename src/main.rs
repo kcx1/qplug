@@ -13,7 +13,8 @@ fn create_lua_env() -> Lua {
 const APP_NAME: &str = "qplug";
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "1");
+    std::env::set_var("RUST_BACKTRACE", "full");
+
     let lua_env = create_lua_env();
 
     let user_config = UserConfig::new(&lua_env);
@@ -43,6 +44,11 @@ fn main() {
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
             cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), &lua_env)
+        }
+        Some(("update", sub_matches)) => {
+            let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());
+
+            cli::subcommands::update::update(&version).expect("Could not update Q-Plug");
         }
         Some(("copy", _sub_matches)) => {
             cli::subcommands::copy::copy_to_plugin_directory().expect("Could not copy plugin");
