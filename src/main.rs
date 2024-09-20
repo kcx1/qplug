@@ -24,11 +24,7 @@ fn main() {
 
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
-            let name = sub_matches.get_one::<String>("str").unwrap();
-            let no_git = sub_matches.get_one::<bool>("Disable Git").unwrap();
-            cli::subcommands::new::create_plugin(name, no_git, &lua_env, &config);
-        }
-        Some(("init", sub_matches)) => {
+            let name = sub_matches.get_one::<String>("Name");
             let no_git = sub_matches.get_one::<bool>("Disable Git").unwrap();
             let no_defs = sub_matches
                 .get_one::<bool>("Disable Lua Definitions")
@@ -36,7 +32,14 @@ fn main() {
             let no_template = sub_matches
                 .get_one::<bool>("Disable Template Creation")
                 .unwrap();
-            cli::subcommands::init::init_plugin(*no_template, *no_git, *no_defs, &config);
+            cli::subcommands::new::create_plugin(
+                name,
+                no_git,
+                no_template,
+                no_defs,
+                &lua_env,
+                &config,
+            );
         }
         Some(("build", sub_matches)) => {
             //TODO: Look into allowing builds for custom flat qplug files. (no info.lua file)

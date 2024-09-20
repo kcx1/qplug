@@ -1,5 +1,5 @@
 use clap::{
-    arg, builder::styling, crate_authors, crate_version, value_parser, Arg, ArgAction, ColorChoice,
+    builder::styling, crate_authors, crate_version, value_parser, Arg, ArgAction, ColorChoice,
     Command,
 };
 use clap_complete::Shell;
@@ -29,18 +29,9 @@ pub fn cli() -> Command {
         .subcommand(
             Command::new("new")
                 .about("Create a new plugin template.")
-                .arg(arg!(<str> "Name of the plugin."))
-                .arg_required_else_help(true)
-                .arg(
-                    Arg::new("Disable Git")
-                        .long("no-git")
-                        .default_value("false")
-                        .action(ArgAction::SetTrue),
-                ),
-        )
-        .subcommand(
-            Command::new("init")
-                .about("Initialize the current directory as a plugin.")
+                .arg(Arg::new("Name")
+                    .action(ArgAction::Set)
+                )
                 .arg(
                     Arg::new("Disable Git")
                         .long("no-git")
