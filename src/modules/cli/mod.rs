@@ -73,6 +73,19 @@ pub fn cli() -> Command {
                         .ignore_case(true),
                 ),
         )
+        // Update
+         .subcommand(
+    Command::new("update")
+                .about("Update the qplug utility to the latest version.")
+                .arg(
+                    Arg::new("Version")
+                    .long("version")
+                    .short('v')
+                    .help("Specify the version to update (or roll back) to. If omitted, defaults to the latest version. Pass the current version to force update.")
+                    .default_value(None)
+                    .action(ArgAction::Set)
+                )
+        )
         .subcommand(Command::new("copy").about("Copy the plugin to the plugin folder."))
         .subcommand(
             Command::new("compile")
