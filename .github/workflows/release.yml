@@ -11,11 +11,22 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/create-gh-release-action@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate RELEASE_NOTES.md
+        run: |
+          echo "Generating RELEASE_NOTES.md"
+          cat CHANGELOG.md > RELEASE_NOTES.md
+
+      - name: Create Release
+        uses: taiki-e/create-gh-release-action@v1
         with:
           # (required) GitHub token for creating GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'New Release!'
+          description: 'RELEASE_NOTES.md'
+
 
   upload-assets:
     needs: create-release
@@ -38,23 +49,6 @@ jobs:
         with:
             targets: ${{ matrix.target }}
 
-      # - name: Install OpenSSL on macOS
-      #   if: matrix.os == 'macos-latest'
-      #   run: |
-      #     arch -x86_64 brew install openssl@1.1
-      #     echo "OPENSSL_DIR=$(arch -x86_64 brew --prefix openssl@1.1)" >> $GITHUB_ENV
-      #     echo "OPENSSL_LIBDIR=$(arch -x86_64 brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
-      #     echo "OPENSSL_INCLUDE_DIR=$(arch -x86_64 brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
-      #     echo "PKG_CONFIG_PATH=$(arch -x86_64 brew --prefix openssl@1.1)/lib/pkgconfig" >> $GITHUB_ENV
-      #
-      # - name: Install OpenSSL on Ubuntu
-      #   if: matrix.os == 'ubuntu-latest'
-      #   run: sudo apt-get install -y libssl-dev
-      #
-      # - name: Install OpenSSL on Windows
-      #   if: matrix.os == 'windows-latest'
-      #   run: |
-      #     choco install openssl
 
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
@@ -64,38 +58,6 @@ jobs:
           target: ${{ matrix.target }}
           tar: unix
           zip: all
+          include: LICENSE,README.md
+          archive: $bin-$tag-$target
           token: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-# # .github/workflows/release.yml
-# name: Release
-#
-# on:
-#   release:
-#     types: [created]
-#
-# jobs:
-#   release:
-#     name: release ${{ matrix.target }}
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         include:
-#           - target: x86_64-pc-windows-gnu
-#             archive: zip
-#           - target: x86_64-unknown-linux-musl
-#             archive: tar.gz zip
-#           - target: x86_64-apple-darwin
-#             archive: zip
-#     steps:
-#       - uses: actions/checkout@master
-#       - name: Compile and release
-#         uses: rust-build/rust-build.action@v1.4.5
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           RUSTTARGET: ${{ matrix.target }}
-#           ARCHIVE_TYPES: ${{ matrix.archive }}
-

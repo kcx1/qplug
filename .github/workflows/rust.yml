@@ -1,5 +1,9 @@
 name: Rust
 
+defaults: 
+  run: 
+    shell: bash
+
 on:
   push:
     branches: [ "main" ]
@@ -23,3 +27,29 @@ jobs:
     - name: Run tests
       run: cargo test --all-features
 
+
+  code-analysis:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: clippy/actions@0.2.1
+      with:
+        tool: "clippy"
+    - uses: actions/checkout@v4
+    - uses: rust-lang/cargo-audit-action@v0.5.0
+      with:
+        mode: "report"
+
+
+  generate-changelog:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: github/changelog-generator@v1.11.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: ./CHANGELOG.md
