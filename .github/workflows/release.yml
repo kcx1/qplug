@@ -43,7 +43,7 @@ jobs:
         with:
           # (required) GitHub token for creating GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: 'Q-Plug Release'
+          title: 'Q-Plug ${{ github.ref_name }}'
           changelog: CHANGELOG.md
 
 
