@@ -2,6 +2,7 @@ use clap::ValueEnum;
 use mlua::{Lua, UserData};
 use std::path::PathBuf;
 
+use crate::config::UserEnv;
 use crate::lua::info::PluginInfo;
 
 use super::compile::compile;
@@ -18,8 +19,8 @@ pub enum VersionType {
 }
 impl UserData for VersionType {}
 
-pub fn build(version: VersionType, info_path: PathBuf, lua: &Lua) {
-    update_version(version, info_path, lua);
+pub fn build(version: VersionType, info_path: PathBuf, user_env: UserEnv) {
+    update_version(version, info_path, user_env.lua);
     compile();
     copy_to_plugin_directory().expect("Could not copy plugin");
 }

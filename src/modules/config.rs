@@ -11,6 +11,11 @@ use std::{
 
 use crate::assets::TEMPLATE_DIR;
 
+pub struct UserEnv<'a> {
+    pub lua: &'a Lua,
+    pub config: &'a Config<'a, 'a>,
+}
+
 pub struct Author {
     pub name: Option<String>,
     pub email: Option<String>,

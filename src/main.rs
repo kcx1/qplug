@@ -3,7 +3,7 @@ use clap_complete::{generate, Shell};
 use mlua::Lua;
 use qplug::assets::INFO_LUA;
 use qplug::cli;
-use qplug::config::{Config, UserConfig};
+use qplug::config::{Config, UserConfig, UserEnv};
 use std::io::{self};
 
 fn create_lua_env() -> Lua {
@@ -13,12 +13,17 @@ fn create_lua_env() -> Lua {
 const APP_NAME: &str = "qplug";
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "full");
+    // std::env::set_var("RUST_BACKTRACE", "full");
 
     let lua_env = create_lua_env();
 
     let user_config = UserConfig::new(&lua_env);
     let config = Config::from_user_config(&user_config);
+
+    let env = UserEnv {
+        lua: &lua_env,
+        config: &config,
+    };
 
     let matches = cli::cli().get_matches();
 
@@ -32,21 +37,14 @@ fn main() {
             let no_template = sub_matches
                 .get_one::<bool>("Disable Template Creation")
                 .unwrap();
-            cli::subcommands::new::create_plugin(
-                name,
-                no_git,
-                no_template,
-                no_defs,
-                &lua_env,
-                &config,
-            );
+            cli::subcommands::new::create_plugin(name, no_git, no_template, no_defs, env);
         }
         Some(("build", sub_matches)) => {
             //TODO: Look into allowing builds for custom flat qplug files. (no info.lua file)
             let version = sub_matches
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
-            cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), &lua_env)
+            cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), env)
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());

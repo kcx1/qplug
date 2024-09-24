@@ -6,12 +6,11 @@ use std::{
 };
 
 use git2::Repository;
-use mlua::Lua;
 use uuid::Uuid;
 
 use crate::{
     assets::DEFINITIONS_DIR,
-    config::{Config, Template},
+    config::{Config, Template, UserEnv},
     files::{self, copy_dir, create_marker_file},
     lua::info::PluginInfo,
 };
@@ -23,8 +22,7 @@ pub fn create_plugin(
     no_git: &bool,
     no_template: &bool,
     no_defs: &bool,
-    lua: &Lua,
-    config: &Config,
+    user_env: UserEnv,
 ) {
     // Check if name was provided - if not set name to parent directory
     let file_name: &String = match name {
@@ -56,11 +54,11 @@ pub fn create_plugin(
     fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
 
     // fetch the template based on the user's config. Default to internal template if none set.
-    fetch_template(&plugin_path, &config.template);
+    fetch_template(&plugin_path, &user_env.config.template);
 
     if !no_template {
         fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
-        fetch_template(plugin_path.as_path(), &config.template);
+        fetch_template(plugin_path.as_path(), &user_env.config.template);
         println!("Template initialized");
     }
 
@@ -96,10 +94,10 @@ pub fn create_plugin(
 
     // Write the info.lua file
     let info_lua_file = files::find_file_recursively(&plugin_path, "info.lua");
-    let info = get_user_info(plugin_name, None, config);
+    let info = get_user_info(plugin_name, None, user_env.config);
     match info_lua_file {
         Some(file) => {
-            info.write_to_file(file, lua)
+            info.write_to_file(file, user_env.lua)
                 .expect("Failed to write info.lua");
         }
         None => {
