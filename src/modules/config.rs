@@ -1,7 +1,7 @@
 use directories::BaseDirs;
 use mlua::{
-    Lua, Table,
-    Value::{self},
+    Lua, Table, TableExt,
+    Value::{self, Nil},
 };
 use serde::Serialize;
 use std::{
@@ -90,10 +90,12 @@ impl UserConfig<'_> {
     pub fn new(lua: &Lua) -> UserConfig<'_> {
         let user_config = match find_config_file() {
             Some(path) => {
-                lua.globals()
-                    .set("lua_config", fs::read_to_string(path).unwrap())
-                    .unwrap();
-                lua.globals().get::<_, Table>("lua_config").unwrap()
+                // Create a function that will return the table form the user config and call it
+                lua.load(fs::read_to_string(&path).unwrap())
+                    .into_function()
+                    .unwrap()
+                    .call(Nil)
+                    .unwrap()
             }
             None => {
                 let lua_config = lua.create_table().expect("Table creation failed");
@@ -104,6 +106,11 @@ impl UserConfig<'_> {
             }
         };
 
+        user_config.for_each(|idx: Value, val: Value| {
+            println!("{:?}: {:?}", idx, val);
+            Ok(())
+        });
+
         UserConfig {
             external_template: user_config.get("external_template").unwrap_or(Value::Nil),
             build_tool: user_config.get("build_tool").unwrap_or(Value::Nil),
@@ -112,7 +119,7 @@ impl UserConfig<'_> {
     }
 }
 
-fn find_config_file() -> Option<PathBuf> {
+pub fn find_config_file() -> Option<PathBuf> {
     fn return_config(config_file: PathBuf) -> Option<PathBuf> {
         if config_file.exists() {
             return Some(config_file);
