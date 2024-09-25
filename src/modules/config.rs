@@ -1,6 +1,6 @@
 use directories::BaseDirs;
 use mlua::{
-    Lua, Table, TableExt,
+    Lua, Table,
     Value::{self, Nil},
 };
 use serde::Serialize;
@@ -108,10 +108,7 @@ impl UserConfig<'_> {
             }
         };
 
-        user_config.for_each(|idx: Value, val: Value| {
-            println!("{:?}: {:?}", idx, val);
-            Ok(())
-        });
+        overload_global_config(&user_config, None, lua);
 
         UserConfig {
             external_template: user_config.get("external_template").unwrap_or(Value::Nil),
@@ -140,13 +137,43 @@ pub fn find_config_file() -> Option<PathBuf> {
     }
 }
 
+fn overload_global_config<'a, 'lua>(
+    user_config: &'a Table<'a>,
+    local_config: Option<PathBuf>,
+    lua: &'lua Lua,
+) -> &'a Table<'a> {
+    // Either User provided config or find a marker file
+    let overload_config =
+        local_config.or_else(|| find_project_dir(Some(&pwd())).map(|path| path.join(MARKER_FILE)));
+
+    if overload_config.is_none() {
+        return user_config;
+    }
+
+    let new_config: Table<'lua> = lua
+        .load(fs::read_to_string(overload_config.unwrap()).unwrap())
+        .into_function()
+        .unwrap()
+        .call(Nil)
+        .unwrap();
+
+    new_config
+        .for_each(|key: Value, val: Value| {
+            user_config.set(key, val).unwrap();
+            Ok(())
+        })
+        .unwrap();
+
+    user_config
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fs;
     use tempfile::tempdir;
 
-    // Test the `find_config_file` function with no config file present.
+    // FIX: Fix this test. Currently it is entirely up to the user's machine.
     #[test]
     fn test_find_config_file_none() {
         let result = find_config_file();
