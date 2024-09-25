@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 
-use crate::{config::find_config_file, files::find_marker_file};
+use crate::{config::find_config_file, files::find_project_dir};
 
 #[derive(ValueEnum, Clone, Debug)]
 #[clap(rename_all = "lower")]
@@ -14,7 +14,7 @@ pub fn check(check_option: CheckOption) {
     match check_option {
         CheckOption::Version => println!("Qplug version: {}", env!("CARGO_PKG_VERSION")),
         CheckOption::Qplug => {
-            let marker_file = find_marker_file(None);
+            let marker_file = find_project_dir(None);
             match marker_file {
                 Some(f) => println!("Qplug plugin found! {:?}", f),
                 None => println!("Not a Qplug plugin. You may want to try `qplug init` or navigating to a qplug directory."),

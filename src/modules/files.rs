@@ -89,7 +89,7 @@ pub fn create_marker_file(root_path: &Path) {
     fs::write(root_path.join(MARKER_FILE), "").expect("Failed to write marker file");
 }
 
-pub fn find_marker_file(path: Option<&Path>) -> Option<PathBuf> {
+pub fn find_project_dir(path: Option<&Path>) -> Option<PathBuf> {
     let mut current_dir = match path {
         Some(path) => path.into(),
         None => pwd(),

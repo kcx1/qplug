@@ -11,6 +11,8 @@ use std::{
 
 use crate::assets::TEMPLATE_DIR;
 
+use super::files::{find_project_dir, pwd, MARKER_FILE};
+
 pub struct UserEnv<'a> {
     pub lua: &'a Lua,
     pub config: &'a Config<'a, 'a>,

@@ -1,7 +1,7 @@
-use crate::{files::find_marker_file, lua::parser::merge_lua_files};
+use crate::{files::find_project_dir, lua::parser::merge_lua_files};
 
 pub fn compile() {
-    let marker = find_marker_file(None);
+    let marker = find_project_dir(None);
     if marker.is_some() {
         let root_path = marker.unwrap();
         let plugin_path = root_path.join("plugin_src");
