@@ -5,7 +5,6 @@ use std::path::PathBuf;
 use crate::config::UserEnv;
 use crate::lua::info::PluginInfo;
 
-use super::compile::compile;
 use super::copy::copy_to_plugin_directory;
 
 //TODO: Refactor this to a more central location.
@@ -21,7 +20,7 @@ impl UserData for VersionType {}
 
 pub fn build(version: VersionType, info_path: PathBuf, user_env: UserEnv) {
     update_version(version, info_path, user_env.lua);
-    compile();
+    (user_env.config.build_tool)();
     copy_to_plugin_directory().expect("Could not copy plugin");
 }
 
