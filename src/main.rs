@@ -4,6 +4,7 @@ use mlua::Lua;
 use qplug::assets::INFO_LUA;
 use qplug::cli;
 use qplug::config::{Config, UserConfig, UserEnv};
+use qplug::lua::api::load_api;
 use std::io::{self};
 
 fn create_lua_env() -> Lua {
@@ -16,6 +17,8 @@ fn main() {
     // std::env::set_var("RUST_BACKTRACE", "full");
 
     let lua_env = create_lua_env();
+
+    load_api(&lua_env);
 
     let user_config = UserConfig::new(&lua_env);
     let config = Config::from_user_config(&user_config);
