@@ -54,7 +54,7 @@ pub fn cli() -> Command {
         // Build
         .subcommand(
             Command::new("build")
-                .about("Build and complie the plugin.")
+                .about("Build and compile the plugin.")
                 .arg(
                     Arg::new("Increment Build Version")
                         // .long("version")
