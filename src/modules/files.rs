@@ -5,7 +5,7 @@ use std::{
 
 use super::config::Template;
 
-const MARKER_FILE: &str = ".qplug";
+pub const MARKER_FILE: &str = ".qplug";
 
 pub enum Entry {
     FileSystem(fs::DirEntry),
@@ -86,10 +86,10 @@ pub fn copy_dir(source: &Template, dest: &Path) -> Result<(), io::Error> {
 }
 
 pub fn create_marker_file(root_path: &Path) {
-    fs::write(root_path.join(MARKER_FILE), "").expect("Failed to write marker file");
+    fs::write(root_path.join(MARKER_FILE), "return {}").expect("Failed to write marker file");
 }
 
-pub fn find_marker_file(path: Option<&Path>) -> Option<PathBuf> {
+pub fn find_project_dir(path: Option<&Path>) -> Option<PathBuf> {
     let mut current_dir = match path {
         Some(path) => path.into(),
         None => pwd(),
@@ -238,7 +238,7 @@ mod tests {
         create_marker_file(root_path);
 
         // Find the marker file starting from the nested directory
-        let found_marker = find_marker_file(Some(root_path)).unwrap();
+        let found_marker = find_project_dir(Some(root_path)).unwrap();
 
         // Verify the correct directory was found
         assert_eq!(found_marker, root_path.to_path_buf());
@@ -254,7 +254,7 @@ mod tests {
         fs::create_dir(&nested_dir).unwrap();
 
         // Try to find the marker file starting from the nested directory
-        let found_marker = find_marker_file(None);
+        let found_marker = find_project_dir(None);
 
         // Verify that no marker file was found
         assert!(found_marker.is_none());

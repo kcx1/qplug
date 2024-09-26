@@ -3,7 +3,7 @@ use clap::{
     Command,
 };
 use clap_complete::Shell;
-use subcommands::build::VersionType;
+use subcommands::{build::VersionType, check::CheckOption};
 
 pub mod subcommands;
 
@@ -82,7 +82,14 @@ pub fn cli() -> Command {
             Command::new("compile")
                 .about("Complie the plugin. Do not increment versioning or copy to plugin folder."),
         )
-        .subcommand(Command::new("check").about("check if current directory is a valid plugin."))
+        .subcommand(Command::new("check")
+            .about("check if current directory is a valid plugin.")
+            .arg(Arg::new("Check Option")
+                .value_parser(value_parser!(CheckOption))
+                .ignore_case(true)
+                .default_value("qplug")
+            )
+        )
         //Generate shell completion
         .subcommand(
             Command::new("completions")
