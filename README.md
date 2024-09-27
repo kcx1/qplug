@@ -1,4 +1,4 @@
-# 🚀 qplug: Your Q-SYS Plugin Development Superhero! 💪
+# 🚀 Q-Plug: Your Q-SYS Plugin Development Superhero! 💪
 Cargo inspired CLI for Q-SYS plugin development. 
 
 This tool aims to make developing Q-SYS plugins easier by combining different tools into a single command line interface.
@@ -68,7 +68,7 @@ PATH="some/folder/with/qplug":$PATH"
 
 ##### Windows:
 
-Adding qplug to windows is pretty straightforward too. 
+Adding Q-Plug to windows is pretty straightforward too. 
 
 [Instructions](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
 
@@ -96,7 +96,7 @@ Options:
 ```
 
 ### Getting Started:
-Get started with qplug in no time!
+Get started with Q-Plug in no time!
 
 You can create a new project using the new command. 
 
@@ -109,12 +109,12 @@ By default, this will create a couple of directories and files.
 - `.git/`: This is the git repository. If you don't want to initialize git, add the --no-git flag to your new command.
 - `definitions/`: This is the directory that contains the Lua definitions for the Q-SYS Extensions. If you don't want to create the definitions, add the --no-defs flag to your new command.
 - `plugin_src/`: This is the source code for the plugin. It is generated from the template (either provided or the builtin). If you don't want to create a template, add the --no-template flag to your new command.
-- `.qplug`: This is a marker file that is used to identify a qplug project. Additionally, it can be used as a local project config file.
+- `.qplug`: This is a marker file that is used to identify a Q-Plug project. Additionally, it can be used as a local project config file.
 
 ```help
 qplug new [name]
 
-Create a new qplug project.  
+Create a new Q-Plug project.  
 
 Usage: qplug new [OPTIONS] [Name]
 
@@ -180,7 +180,7 @@ Options:
 ##### Check Q-plug
 This command will allow you to check a few different things. 
 - Version: This will return the version number of the Q-plug itself (this can also be found using `qplug -V`)
-- Q-plug: Check if your current directory is a qplug project!
+- Q-plug: Check if your current directory is a Q-Plug project!
 - Config: Get the path of the discovered configuration, if any.
 
 ```help
@@ -190,6 +190,20 @@ Options:
   -h, --help     Print help
 ```
 
+##### Update Q-plug
+Have Q-Plug update itself to the latest version so you don't have to worry about downloading new binaries and updating your path. 
+
+You can specify a version to update to (or roll back). If you don't specify one, it will update to the latest version.
+```help
+Update the qplug utility to the latest version.
+
+Usage: qplug update
+
+Options:
+  -v, --version <Version>  Specify the version to update (or roll back) to. If omitted, defaults to the latest version. Pass the current version 
+to force update.
+  -h, --help               Print help
+```
 ### Configuration
 
 You can configure various aspects of Q-Plug using the following commands and files.
@@ -200,7 +214,7 @@ You may have multiple projects that require different settings. One way to accom
 
 Here's an example:
 ```lua
--- Example QPlug configuration.
+-- Example Q-Plug configuration.
 return {
     -- [[ Your info ]] --
     -- Must be a table called "me". Any unimplemented data will just be ignored. 
@@ -229,10 +243,10 @@ return {
 ```
 
 ## Contributing
-Contributions to qplug are welcome! Please follow standard coding practices and ensure that any changes do not break existing functionality.
+Contributions to Q-Plug are welcome! Please follow standard coding practices and ensure that any changes do not break existing functionality.
 
 ## Reporting Issues
-If you encounter any issues while using qplug, feel free to report them. Your feedback is essential in helping us improve the app.
+If you encounter any issues while using Q-Plug, feel free to report them. Your feedback is essential in helping to improve the app.
 
 ## License
-qplug is released under the MIT license.
+Q-Plug is released under the MIT license.
