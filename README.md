@@ -1,4 +1,4 @@
-# 🚀 qplug: Your Q-SYS Plugin Development Superhero! 💪
+# 🚀 qplug: Your Q-SYS Plugin Development Sidekick! 💪
 Cargo inspired CLI for Q-SYS plugin development. 
 
 This tool aims to make developing Q-SYS plugins easier by combining different tools into a single command line interface.
@@ -14,9 +14,10 @@ This tool aims to make developing Q-SYS plugins easier by combining different to
     - Use `require` statement to load your extra lua files 🔧
     - Automatically bump the version number when you build. 📈
     - Configure your own build tool (This lets you carry on using the one from Q-SYS team if you want 😊)
-    - Automatically copy the built plugin to your plugin directory (But only if you're on Windows 🤣)
+    - Automatically copy the built plugin to your plugin directory (But only if you're on Windows ¯\_(ツ)_/¯)
 - Auto Shell Completion 🔁
 - Self Updating 💸
+- Cross Platform 🔀
 
 ## Installation:
 
