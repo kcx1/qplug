@@ -54,7 +54,7 @@ pub fn cli() -> Command {
         // Build
         .subcommand(
             Command::new("build")
-                .about("Build and complie the plugin.")
+                .about("Build and compile the plugin.")
                 .arg(
                     Arg::new("Increment Build Version")
                         // .long("version")
@@ -80,7 +80,7 @@ pub fn cli() -> Command {
         .subcommand(Command::new("copy").about("Copy the plugin to the plugin folder."))
         .subcommand(
             Command::new("compile")
-                .about("Complie the plugin. Do not increment versioning or copy to plugin folder."),
+                .about("Compile the plugin. Do not increment versioning or copy to plugin folder."),
         )
         .subcommand(Command::new("check")
             .about("check if current directory is a valid plugin.")
