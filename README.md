@@ -10,7 +10,7 @@ This tool aims to make developing Q-SYS plugins easier by combining different to
     - Includes Lua definitions for the Q-SYS Extensions to Lua 📚
     - Auto fill the info.lua file with your information. 💬
 - ⏱️ Build plugins quickly!
-    - Compile multiple lua files into a single qplug file 💻
+    - Compile multiple lua files into a single `.qplug` file 💻
     - Use `require` statement to load your extra lua files 🔧
     - Automatically bump the version number when you build. 📈
     - Configure your own build tool (This lets you carry on using the one from Q-SYS team if you want 😊)
@@ -154,7 +154,7 @@ Options:
 ##### Compile a plugin
 
 This will compile a `.qplug` file based on the contents of the Lua files within the `plugin_src` directory.
-By default, it will use the builtin build tool. However, you can specify your own within the config file. (see below)
+By default, it will use the builtin build tool. However, you can specify your own within the config file. [config](#global-configuration-file)
 
 ```help
 Compile the plugin. Do not increment versioning or copy to plugin folder.
