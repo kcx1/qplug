@@ -62,7 +62,8 @@ pub fn cli() -> Command {
                         .value_parser(value_parser!(VersionType))
                         .default_value("dev")
                         .ignore_case(true),
-                ),
+                )
+            .arg(Arg::new("Path to build")),
         )
         // Update
          .subcommand(
@@ -77,7 +78,12 @@ pub fn cli() -> Command {
                     .action(ArgAction::Set)
                 )
         )
-        .subcommand(Command::new("copy").about("Copy the plugin to the plugin folder."))
+        .subcommand(
+            Command::new("copy")
+                .about("Copy the plugin to the plugin folder.")
+                .arg(Arg::new("Copy Path")
+                .action(ArgAction::Set)
+        ))
         .subcommand(
             Command::new("compile")
                 .about("Compile the plugin. Do not increment versioning or copy to plugin folder."),

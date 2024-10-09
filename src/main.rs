@@ -54,8 +54,10 @@ fn main() {
 
             cli::subcommands::update::update(&version).expect("Could not update Q-Plug");
         }
-        Some(("copy", _sub_matches)) => {
-            cli::subcommands::copy::copy_to_plugin_directory().expect("Could not copy plugin");
+        Some(("copy", sub_matches)) => {
+            let copy_path: Option<&String> = sub_matches.get_one("Copy Path");
+            cli::subcommands::copy::copy_to_plugin_directory(env.config, copy_path)
+                .expect("Could not copy plugin");
         }
         Some(("compile", _sub_matches)) => {
             cli::subcommands::compile::compile();

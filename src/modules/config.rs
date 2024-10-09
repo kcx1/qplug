@@ -34,6 +34,7 @@ pub struct Config<'lua, 'a> {
     pub build_tool: Box<dyn Fn() + 'lua>,
     pub template: Template<'a>,
     pub me: Author,
+    pub plugin_dir: Option<PathBuf>, // path to the Q-Sys plugin directory. Not needed on Windows
 }
 
 impl<'lua, 'a> Config<'lua, 'a> {
@@ -73,10 +74,16 @@ impl<'lua, 'a> Config<'lua, 'a> {
             },
         };
 
+        let qsys_plugin_dir = match &user_config.plugin_dir {
+            Value::String(s) => Some(PathBuf::from(s.to_str().unwrap())),
+            _ => None,
+        };
+
         Config {
             build_tool,
             template,
             me,
+            plugin_dir: qsys_plugin_dir,
         }
     }
 }
@@ -86,6 +93,7 @@ pub struct UserConfig<'lua> {
     pub build_tool: Value<'lua>,        // default to built-in
     pub external_template: Value<'lua>, // can be path or url - default to built-in template
     pub me: Value<'lua>,
+    pub plugin_dir: Value<'lua>,
 }
 
 impl UserConfig<'_> {
@@ -114,6 +122,7 @@ impl UserConfig<'_> {
             external_template: user_config.get("external_template").unwrap_or(Value::Nil),
             build_tool: user_config.get("build_tool").unwrap_or(Value::Nil),
             me: user_config.get("me").unwrap_or(Value::Nil),
+            plugin_dir: user_config.get("plugin_dir").unwrap_or(Value::Nil),
         }
     }
 }
