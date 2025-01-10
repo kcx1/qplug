@@ -182,12 +182,13 @@ mod tests {
     use std::fs;
     use tempfile::tempdir;
 
-    // FIX: Fix this test. Currently it is entirely up to the user's machine.
+    // INFO: This test only works if you don't have a config file in your home directory.
     #[test]
     fn test_find_config_file_none() {
         let result = find_config_file();
         assert!(result.is_none());
     }
+
     fn test_return_config(config_file: PathBuf) -> Option<PathBuf> {
         if config_file.exists() {
             return Some(config_file);
@@ -246,7 +247,7 @@ mod tests {
         // tempdir automatically cleans up when it goes out of scope
     }
 
-    // Test the `get_config` function when no config file is found (default values).
+    // INFO: This test only works if you don't have a config file in your home directory.
     #[test]
     fn test_get_config_default() {
         let lua = Lua::new();
