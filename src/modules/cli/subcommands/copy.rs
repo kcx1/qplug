@@ -42,10 +42,10 @@ fn copy_files(source_file: FileInfo, destination: &PathBuf) -> Result<u64, std::
 
 pub fn copy_to_plugin_directory(
     config: &Config,
-    copy_path: &String,
+    copy_path: Option<&String>,
 ) -> Result<u64, std::io::Error> {
     let source_file = get_compiled_file();
-    match Some(copy_path) {
+    match copy_path {
         // A path is passed as an argument
         Some(destination) => copy_files(source_file, &PathBuf::from(destination)),
         // No path is passed as an argument

@@ -43,11 +43,18 @@ fn main() {
             cli::subcommands::new::create_plugin(name, no_git, no_template, no_defs, env);
         }
         Some(("build", sub_matches)) => {
-            //TODO: Look into allowing builds for custom flat qplug files. (no info.lua file)
             let version = sub_matches
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
-            cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), env)
+            let build_path: Option<&String> = sub_matches.get_one("Path to build");
+            let copy_path: Option<&String> = sub_matches.get_one("Path to copy");
+            cli::subcommands::build::build(
+                version.to_owned(),
+                INFO_LUA.clone().unwrap(),
+                env,
+                build_path,
+                copy_path,
+            );
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());

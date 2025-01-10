@@ -18,10 +18,22 @@ pub enum VersionType {
 }
 impl UserData for VersionType {}
 
-pub fn build(version: VersionType, info_path: PathBuf, user_env: UserEnv) {
-    update_version(version, info_path, user_env.lua);
+pub fn build(
+    version: VersionType,
+    info_path: PathBuf,
+    user_env: UserEnv,
+    build_path: Option<&String>,
+    copy_path: Option<&String>,
+) {
+    //Use the build path if set, else use the dynamically found info path
+    let path = if let Some(path) = build_path {
+        path.into()
+    } else {
+        info_path
+    };
+    update_version(version, path, user_env.lua);
     (user_env.config.build_tool)();
-    copy_to_plugin_directory(user_env.config).expect("Could not copy plugin");
+    copy_to_plugin_directory(user_env.config, copy_path).expect("Could not copy plugin");
 }
 
 fn update_version(version: VersionType, info_path: PathBuf, lua: &Lua) {
