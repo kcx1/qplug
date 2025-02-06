@@ -63,38 +63,35 @@ pub fn cli() -> Command {
                         .default_value("dev")
                         .ignore_case(true),
                 )
-            .arg(Arg::new("Path to build").long("build_from").short('b'))
-            .arg(Arg::new("Path to copy").long("copy_to").short('c')),
+                .arg(Arg::new("Path to build").long("build_from").short('b'))
+                .arg(Arg::new("Path to copy").long("copy_to").short('c'))
                 .arg(
                     Arg::new("Build Only")
                         .long("build_only")
                         .default_value("false")
                         .action(ArgAction::SetTrue)
                         .help("Build only. Do not update plugin info or copy to plugin directory.")
+                )
         )
         // Update
-         .subcommand(
-    Command::new("update")
+        .subcommand(
+            Command::new("update")
                 .about("Update the qplug utility to the latest version.")
                 .arg(
                     Arg::new("Version")
-                    .long("version")
-                    .short('v')
-                    .help("Specify the version to update (or roll back) to. If omitted, defaults to the latest version. Pass the current version to force update.")
-                    .default_value(None)
-                    .action(ArgAction::Set)
+                        .long("version")
+                        .short('v')
+                        .help("Specify the version to update (or roll back) to. If omitted, defaults to the latest version. Pass the current version to force update.")
+                        .default_value(None)
+                        .action(ArgAction::Set)
                 )
         )
         .subcommand(
             Command::new("copy")
                 .about("Copy the plugin to the plugin folder.")
                 .arg(Arg::new("Copy Path")
-                .action(ArgAction::Set)
-        ))
-        .subcommand(
-            Command::new("compile")
-                .about("Compile the plugin. Do not increment versioning or copy to plugin folder."),
-        )
+                    .action(ArgAction::Set)
+                ))
         .subcommand(Command::new("check")
             .about("check if current directory is a valid plugin.")
             .arg(Arg::new("Check Option")
@@ -115,4 +112,8 @@ pub fn cli() -> Command {
                         .required(true),
                 ),
         )
+}
+
+pub fn get_arg(arg_id: &str) {
+    println!("{}", arg_id);
 }

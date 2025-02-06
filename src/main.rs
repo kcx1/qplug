@@ -64,12 +64,11 @@ fn main() {
             cli::subcommands::update::update(&version).expect("Could not update Q-Plug");
         }
         Some(("copy", sub_matches)) => {
-            let copy_path: Option<&String> = sub_matches.get_one("Copy Path");
+            let default_dir = user_config.plugin_dir.to_string().unwrap();
+            let copy_path: Option<&String> =
+                sub_matches.get_one("Copy Path").or(Some(&default_dir));
             cli::subcommands::copy::copy_to_plugin_directory(env.config, copy_path)
                 .expect("Could not copy plugin");
-        }
-        Some(("compile", _sub_matches)) => {
-            cli::subcommands::compile::compile();
         }
         Some(("check", sub_matches)) => {
             let check_option = sub_matches
