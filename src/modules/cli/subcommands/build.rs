@@ -24,6 +24,7 @@ pub fn build(
     user_env: UserEnv,
     build_path: Option<&String>,
     copy_path: Option<&String>,
+    build_only: bool,
 ) {
     //Use the build path if set, else use the dynamically found info path
     let path = if let Some(path) = build_path {

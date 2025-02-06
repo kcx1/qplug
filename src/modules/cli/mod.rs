@@ -65,6 +65,12 @@ pub fn cli() -> Command {
                 )
             .arg(Arg::new("Path to build").long("build_from").short('b'))
             .arg(Arg::new("Path to copy").long("copy_to").short('c')),
+                .arg(
+                    Arg::new("Build Only")
+                        .long("build_only")
+                        .default_value("false")
+                        .action(ArgAction::SetTrue)
+                        .help("Build only. Do not update plugin info or copy to plugin directory.")
         )
         // Update
          .subcommand(
