@@ -31,7 +31,7 @@ pub enum Template<'a> {
     InMemoryDir(&'a include_dir::Dir<'static>),
 }
 
-type Tool = Box<dyn Fn(Option<&String>)>;
+type Tool = Box<dyn Fn()>;
 
 pub struct Config<'a> {
     pub build_tool: Tool,
@@ -43,20 +43,16 @@ pub struct Config<'a> {
 impl Config<'_> {
     pub fn from_user_config(user_config: &UserConfig) -> Self {
         // Internal implementation as a callable
-        let default_build_tool = |arg: Option<&String>| {
-            crate::cli::subcommands::build::default_build_tool(arg);
+        let default_build_tool = || {
+            crate::cli::subcommands::build::default_build_tool();
         };
 
         // Determine which build_tool to use
-        let build_tool: Tool = match &user_config.build_tool {
+        let build_tool: Box<dyn Fn()> = match &user_config.build_tool {
             Value::Function(f) => {
                 let f_clone = f.clone();
-                Box::new(move |arg: Option<&String>| {
-                    if let Some(arg) = arg {
-                        let _ = f_clone.call::<()>(arg.as_str());
-                    } else {
-                        let _ = f_clone.call::<()>(());
-                    }
+                Box::new(move || {
+                    let _ = f_clone.call::<()>(());
                 })
             }
             _ => Box::new(default_build_tool),

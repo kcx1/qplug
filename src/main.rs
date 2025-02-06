@@ -47,13 +47,11 @@ fn main() {
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
             let build_only = sub_matches.get_flag("Build Only");
-            let build_path: Option<&String> = sub_matches.get_one("Path to build");
             let copy_path: Option<&String> = sub_matches.get_one("Path to copy");
             cli::subcommands::build::build(
                 version.to_owned(),
                 INFO_LUA.clone().unwrap(),
                 env,
-                build_path,
                 copy_path,
                 build_only,
             );

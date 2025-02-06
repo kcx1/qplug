@@ -63,7 +63,6 @@ pub fn cli() -> Command {
                         .default_value("dev")
                         .ignore_case(true),
                 )
-                .arg(Arg::new("Path to build").long("build_from").short('b'))
                 .arg(Arg::new("Path to copy").long("copy_to").short('c'))
                 .arg(
                     Arg::new("Build Only")
