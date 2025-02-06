@@ -7,6 +7,7 @@ use serde::Serialize;
 use std::{
     fs::{self},
     path::PathBuf,
+    str::FromStr,
 };
 
 use crate::assets::TEMPLATE_DIR;
@@ -15,7 +16,7 @@ use super::files::{find_project_dir, pwd, MARKER_FILE};
 
 pub struct UserEnv<'a> {
     pub lua: &'a Lua,
-    pub config: &'a Config<'a, 'a>,
+    pub config: &'a Config<'a>,
 }
 
 pub struct Author {
@@ -30,21 +31,34 @@ pub enum Template<'a> {
     InMemoryDir(&'a include_dir::Dir<'static>),
 }
 
-pub struct Config<'lua, 'a> {
-    pub build_tool: Box<dyn Fn() + 'lua>,
+type Tool = Box<dyn Fn(Option<&String>)>;
+
+pub struct Config<'a> {
+    pub build_tool: Tool,
     pub template: Template<'a>,
     pub me: Author,
     pub plugin_dir: Option<PathBuf>, // path to the Q-Sys plugin directory. Not needed on Windows
 }
 
-impl<'lua, 'a> Config<'lua, 'a> {
-    pub fn from_user_config(user_config: &'lua UserConfig) -> Self {
+impl Config<'_> {
+    pub fn from_user_config(user_config: &UserConfig) -> Self {
         // Internal implementation as a callable
-        let default_build_tool = crate::cli::subcommands::compile::compile;
+        let default_build_tool = |arg: Option<&String>| {
+            crate::cli::subcommands::build::default_build_tool(arg);
+        };
 
         // Determine which build_tool to use
-        let build_tool: Box<dyn Fn()> = match &user_config.build_tool {
-            Value::Function(f) => Box::new(|| f.call(()).unwrap()),
+        let build_tool: Tool = match &user_config.build_tool {
+            Value::Function(f) => {
+                let f_clone = f.clone();
+                Box::new(move |arg: Option<&String>| {
+                    if let Some(arg) = arg {
+                        let _ = f_clone.call::<()>(arg.as_str());
+                    } else {
+                        let _ = f_clone.call::<()>(());
+                    }
+                })
+            }
             _ => Box::new(default_build_tool),
         };
 
@@ -55,7 +69,7 @@ impl<'lua, 'a> Config<'lua, 'a> {
                 if template_str.starts_with("http") {
                     Template::Url(template_str.to_owned())
                 } else {
-                    Template::FileSystem(PathBuf::from(template_str))
+                    Template::FileSystem(PathBuf::from_str(&template_str).unwrap())
                 }
             }
             _ => Template::InMemoryDir(&TEMPLATE_DIR),
@@ -75,7 +89,7 @@ impl<'lua, 'a> Config<'lua, 'a> {
         };
 
         let qsys_plugin_dir = match &user_config.plugin_dir {
-            Value::String(s) => Some(PathBuf::from(s.to_str().unwrap())),
+            Value::String(s) => Some(PathBuf::from_str(&s.to_str().unwrap()).unwrap()),
             _ => None,
         };
 
@@ -89,15 +103,15 @@ impl<'lua, 'a> Config<'lua, 'a> {
 }
 
 #[derive(Serialize, Debug, Clone)]
-pub struct UserConfig<'lua> {
-    pub build_tool: Value<'lua>,        // default to built-in
-    pub external_template: Value<'lua>, // can be path or url - default to built-in template
-    pub me: Value<'lua>,
-    pub plugin_dir: Value<'lua>,
+pub struct UserConfig {
+    pub build_tool: Value,        // default to built-in
+    pub external_template: Value, // can be path or url - default to built-in template
+    pub me: Value,
+    pub plugin_dir: Value,
 }
 
-impl UserConfig<'_> {
-    pub fn new(lua: &Lua) -> UserConfig<'_> {
+impl UserConfig {
+    pub fn new(lua: &Lua) -> UserConfig {
         let user_config = match find_config_file() {
             Some(path) => {
                 // Create a function that will return the table form the user config and call it
@@ -146,11 +160,11 @@ pub fn find_config_file() -> Option<PathBuf> {
     }
 }
 
-fn overload_global_config<'a, 'lua>(
-    user_config: &'a Table<'a>,
+fn overload_global_config<'a>(
+    user_config: &'a Table,
     local_config: Option<PathBuf>,
-    lua: &'lua Lua,
-) -> &'a Table<'a> {
+    lua: &Lua,
+) -> &'a Table {
     // Either User provided config or find a marker file
     let overload_config =
         local_config.or_else(|| find_project_dir(Some(&pwd())).map(|path| path.join(MARKER_FILE)));
@@ -159,7 +173,7 @@ fn overload_global_config<'a, 'lua>(
         return user_config;
     }
 
-    let new_config: Table<'lua> = lua
+    let new_config: Table = lua
         .load(fs::read_to_string(overload_config.unwrap()).unwrap())
         .into_function()
         .unwrap()
