@@ -15,7 +15,11 @@ pub fn serialize_value(lua: &Lua, value: &Value) -> String {
         Value::Boolean(b) => b.to_string(),
         Value::Integer(i) => i.to_string(),
         Value::Number(n) => n.to_string(),
-        Value::String(s) => format!(r#""{}""#, s.to_str().unwrap_or("")),
+        Value::String(s) => format!(
+            r#""{}""#,
+            s.to_str()
+                .unwrap_or(lua.create_string("").unwrap().to_str().unwrap())
+        ),
         Value::Table(t) => serialize_table(lua, t),
         _ => "unsupported".to_string(), // Handle more types if needed
     }
@@ -55,8 +59,11 @@ pub fn find_lua_requirements(haystack: &str, plugin_path: PathBuf) -> String {
     result.to_string()
 }
 
-pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Result<()> {
-    let init_file = INIT_LUA.clone().expect("Failed to load init.lua");
+pub fn merge_lua_files(
+    root_path: PathBuf,
+    plugin_path: PathBuf,
+    init_file: Option<PathBuf>,
+) -> std::io::Result<()> {
     let plugin_name = root_path
         .file_name()
         .expect("Failed to parse plugin name from path");
@@ -65,7 +72,11 @@ pub fn merge_lua_files(root_path: PathBuf, plugin_path: PathBuf) -> std::io::Res
     ));
 
     // Read the skeleton Lua file
-    let mut init_content = fs::read_to_string(init_file)?;
+    let mut init_content = fs::read_to_string(
+        init_file
+            .or(Some(INIT_LUA.clone().expect("Failed to load init.lua")))
+            .expect("No init file found"),
+    )?;
 
     // Update the init file with the modules.
     init_content = find_lua_requirements(&init_content, plugin_path);

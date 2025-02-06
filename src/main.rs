@@ -43,22 +43,30 @@ fn main() {
             cli::subcommands::new::create_plugin(name, no_git, no_template, no_defs, env);
         }
         Some(("build", sub_matches)) => {
-            //TODO: Look into allowing builds for custom flat qplug files. (no info.lua file)
             let version = sub_matches
                 .get_one::<cli::subcommands::build::VersionType>("Increment Build Version")
                 .unwrap();
-            cli::subcommands::build::build(version.to_owned(), INFO_LUA.clone().unwrap(), env)
+            let build_only = sub_matches.get_flag("Build Only");
+            let copy_path: Option<&String> = sub_matches.get_one("Path to copy");
+            cli::subcommands::build::build(
+                version.to_owned(),
+                INFO_LUA.clone().unwrap(),
+                env,
+                copy_path,
+                build_only,
+            );
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());
 
             cli::subcommands::update::update(&version).expect("Could not update Q-Plug");
         }
-        Some(("copy", _sub_matches)) => {
-            cli::subcommands::copy::copy_to_plugin_directory().expect("Could not copy plugin");
-        }
-        Some(("compile", _sub_matches)) => {
-            cli::subcommands::compile::compile();
+        Some(("copy", sub_matches)) => {
+            let default_dir = user_config.plugin_dir.to_string().unwrap();
+            let copy_path: Option<&String> =
+                sub_matches.get_one("Copy Path").or(Some(&default_dir));
+            cli::subcommands::copy::copy_to_plugin_directory(env.config, copy_path)
+                .expect("Could not copy plugin");
         }
         Some(("check", sub_matches)) => {
             let check_option = sub_matches

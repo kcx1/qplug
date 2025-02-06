@@ -1,20 +1,21 @@
 [package]
 name = "qplug"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Casey C <kcx1codes@gmail.com>"]
 description = "CLI toolchain for managing Q-Sys plugins"
 license = "GPL-3.0-or-later"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.95"
 clap = { version = "4.5.11", features = ["derive", "help", "cargo", "color"]}
 clap_complete = "4.5.13"
-directories = "5.0.1"
+directories = "6.0.0"
 git2 = { version = "0.20.0", features = ["vendored-openssl", "https", "ssh"] }
 include_dir = "0.7.4"
-mlua = { version = "0.9.9", features = ["serialize", "lua54", "vendored"] }
+mlua = { version = "0.10.2", features = ["serialize", "lua54", "vendored"] }
 regex = "1.10.5"
-self_update = { version = "0.41.0", features = ["archive-tar", "archive-zip", "compression-flate2", "compression-zip-deflate", "tar", "zip"] }
+self_update = { version = "0.42.0", features = ["archive-tar", "archive-zip", "compression-flate2", "compression-zip-deflate", "tar", "zip"] }
 serde = { version = "1.0.204", features = ["derive"] }
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
 
