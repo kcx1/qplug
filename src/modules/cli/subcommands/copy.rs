@@ -53,11 +53,11 @@ pub fn copy_to_plugin_directory(
             #[cfg(windows)]
             {
                 // Try using a path declared in the config. Otherwise, use to the Q-Sys Designer plugin directory
-                let destination = match config.plugin_dir {
+                let destination = match &config.plugin_dir {
                     Some(destination) => destination,
-                    None => get_qsys_plugin_dir().join(format!("{}.qplug", source_file.name)),
+                    None => &get_qsys_plugin_dir().join(format!("{}.qplug", source_file.name)),
                 };
-                copy_files(source_file, destination)
+                copy_files(source_file, &destination);
             }
             #[cfg(not(windows))]
             {
