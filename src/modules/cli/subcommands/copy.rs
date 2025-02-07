@@ -57,7 +57,7 @@ pub fn copy_to_plugin_directory(
                     Some(destination) => destination,
                     None => &get_qsys_plugin_dir().join(format!("{}.qplug", source_file.name)),
                 };
-                copy_files(source_file, &destination);
+                copy_files(source_file, &destination)
             }
             #[cfg(not(windows))]
             {
