@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-02-07
+### :bug: Bug Fixes
+- [`bbb8165`](https://github.com/kcx1/qplug/commit/bbb81650948f6da32396c44dd530724deb13d615) - Fixes borrow checker issue for Windows *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :wrench: Chores
+- [`de6cd97`](https://github.com/kcx1/qplug/commit/de6cd979967d6bfa9ec2100f4a28d6c7c562ef07) - **deps**: Bump openssl from 0.10.68 to 0.10.70 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+
+
 ## [0.3.1] - 2025-02-06
 ### :sparkles: New Features
 - [`290920f`](https://github.com/kcx1/qplug/commit/290920f50ef55d46cfca6952755155e1bc42a46f) - Adds ability to specify a path to copy compilted .qplug file into *(commit by [@kcx1](https://github.com/kcx1))*
@@ -76,3 +84,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.3.0]: https://github.com/kcx1/qplug/compare/0.2.2...0.3.0
 [3.1]: https://github.com/kcx1/qplug/compare/0.3.0...3.1
 [0.3.1]: https://github.com/kcx1/qplug/compare/0.3.0...0.3.1
+[0.3.2]: https://github.com/kcx1/qplug/compare/0.3.1...0.3.2
