@@ -18,7 +18,7 @@ Here is the framework structure:
 
 ```
 .
-├── LICENSE.txt
+├── LICENSE
 ├── README.md
 ├── control_components
 │   ├── components.lua
@@ -32,6 +32,7 @@ Here is the framework structure:
 │   ├── properties.lua
 │   └── rectify_properties.lua
 ├── runtime
+│   ├── requirements.lua
 │   └── runtime.lua
 └── setup
     ├── colors.lua
@@ -80,9 +81,9 @@ This will not parse init.lua files within directories. You must require the full
 This subdirectory contains code derived from the Basic Framework Plugin by QSC.
 
 - **Original Work**: Copyright (c) QSC, LLC, 2021
-- **Modifications and New Work**: Copyright (c) Casey Compton / Ascend Studios, LLC, 2024
+- **Modifications and New Work**: Copyright (c) kcx1, 2024
 
-The code in this subdirectory is licensed under the MIT License. See the `LICENSE.txt` file in this directory for the full license text.
+The code in this subdirectory is licensed under the MIT License. See the `LICENSE` file in this directory for the full license text.
 
 ## Additional Information
 
