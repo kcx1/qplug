@@ -1,4 +1,4 @@
-# 🚀 Q-Plug: Your Q-SYS Plugin Development Toolchain! 💪
+# 🚀 Q-Plug: Q-SYS Plugin Development Made Easy! 💪
 Cargo inspired CLI for Q-SYS plugin development. 
 
 This tool aims to make developing Q-SYS plugins easier by combining different tools into a single command line interface.
