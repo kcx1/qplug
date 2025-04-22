@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2025-04-22
+### :bug: Bug Fixes
+- [`88331ef`](https://github.com/kcx1/qplug/commit/88331efe706fa840f0f67e9548d073d99afd9259) - Fixes borrow checker issue for Windows *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :wrench: Chores
+- [`caf91ae`](https://github.com/kcx1/qplug/commit/caf91ae7033b0592a89b41b6585df3c571b8b83d) - **deps**: Bump ring from 0.17.8 to 0.17.13 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+- [`ec3dd41`](https://github.com/kcx1/qplug/commit/ec3dd41944684dc38f55032084a6c5909d3bcfe7) - **deps**: Bump zip from 2.2.2 to 2.4.1 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+- [`f5a4488`](https://github.com/kcx1/qplug/commit/f5a448867d6a92d6de37353d8ade6ab2e3a90144) - **deps**: Bump openssl from 0.10.70 to 0.10.72 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+- [`c0e6707`](https://github.com/kcx1/qplug/commit/c0e6707fbac6d18ee452f1f2b87701b8516a66b7) - **deps**: Bump tokio from 1.43.0 to 1.44.2 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+
+
 ## [0.3.2] - 2025-02-07
 ### :bug: Bug Fixes
 - [`bbb8165`](https://github.com/kcx1/qplug/commit/bbb81650948f6da32396c44dd530724deb13d615) - Fixes borrow checker issue for Windows *(commit by [@kcx1](https://github.com/kcx1))*
@@ -85,3 +96,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [3.1]: https://github.com/kcx1/qplug/compare/0.3.0...3.1
 [0.3.1]: https://github.com/kcx1/qplug/compare/0.3.0...0.3.1
 [0.3.2]: https://github.com/kcx1/qplug/compare/0.3.1...0.3.2
+[0.3.3]: https://github.com/kcx1/qplug/compare/0.3.2...0.3.3
