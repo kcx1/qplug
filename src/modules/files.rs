@@ -86,17 +86,23 @@ pub fn copy_dir(source: &Template, dest: &Path) -> Result<(), io::Error> {
 }
 
 pub fn create_marker_file(root_path: &Path) {
+    //TODO: Create some cache of other relevant files here such as path to the init.lua file. And
+    //the path to the info.lua file for the project.
     fs::write(root_path.join(MARKER_FILE), "return {}").expect("Failed to write marker file");
 }
 
 pub fn find_project_dir(path: Option<&Path>) -> Option<PathBuf> {
-    let mut current_dir = match path {
+    search_parents(MARKER_FILE, path)
+}
+
+fn search_parents(file: &str, starting_path: Option<&Path>) -> Option<PathBuf> {
+    let mut current_dir = match starting_path {
         Some(path) => path.into(),
         None => pwd(),
     };
 
     loop {
-        if current_dir.join(MARKER_FILE).exists() {
+        if current_dir.join(file).exists() {
             return Some(current_dir.to_path_buf());
         }
 

@@ -4,6 +4,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-02-07
+### :bug: Bug Fixes
+- [`bbb8165`](https://github.com/kcx1/qplug/commit/bbb81650948f6da32396c44dd530724deb13d615) - Fixes borrow checker issue for Windows *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :wrench: Chores
+- [`de6cd97`](https://github.com/kcx1/qplug/commit/de6cd979967d6bfa9ec2100f4a28d6c7c562ef07) - **deps**: Bump openssl from 0.10.68 to 0.10.70 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+
+
+## [0.3.1] - 2025-02-06
+### :sparkles: New Features
+- [`290920f`](https://github.com/kcx1/qplug/commit/290920f50ef55d46cfca6952755155e1bc42a46f) - Adds ability to specify a path to copy compilted .qplug file into *(commit by [@kcx1](https://github.com/kcx1))*
+- [`e96a583`](https://github.com/kcx1/qplug/commit/e96a583c5ac9e2ffeeefde9d9994113c755ca4bb) - Create a build path; allow copy path to be optional *(commit by [@kcx1](https://github.com/kcx1))*
+- [`63d4e86`](https://github.com/kcx1/qplug/commit/63d4e86ae92938aa363f6fb19236cfb854f3ca58) - Create a build only flag *(commit by [@kcx1](https://github.com/kcx1))*
+- [`e3fe204`](https://github.com/kcx1/qplug/commit/e3fe204969b2b9093fc976a4f0e604e514c79a2f) - Removes the copy command in favor of an option under the build command *(commit by [@kcx1](https://github.com/kcx1))*
+- [`a455dba`](https://github.com/kcx1/qplug/commit/a455dbae29243745a1c3bfde1dfdbb3e2cc2c37e) - Remove Build Path as option *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :bug: Bug Fixes
+- [`ee5c885`](https://github.com/kcx1/qplug/commit/ee5c8859319063c74d8c32f20d3f63055939f100) - Update packages to prevent vuln *(commit by [@kcx1](https://github.com/kcx1))*
+- [`9e520d0`](https://github.com/kcx1/qplug/commit/9e520d0e5b2c2c4317bc33ab326ab23d40cb7a42) - Fixes IDNA vuln *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :wrench: Chores
+- [`b0d33dd`](https://github.com/kcx1/qplug/commit/b0d33ddec4b9c83c74a012bfc51554537ee2ac26) - Fix typo *(commit by [@kcx1](https://github.com/kcx1))*
+- [`b0a3262`](https://github.com/kcx1/qplug/commit/b0a3262f05dfa1639c87962ccadc2dd0d0e37da2) - Fix Typo *(commit by [@kcx1](https://github.com/kcx1))*
+- [`b097a60`](https://github.com/kcx1/qplug/commit/b097a60c6ba1063cd9bc367db2a7998efb56c426) - Update phrasing *(commit by [@kcx1](https://github.com/kcx1))*
+- [`4a35d4a`](https://github.com/kcx1/qplug/commit/4a35d4acf1a913dba4fb42b8a35c653ffe76c33b) - Clean up *(commit by [@kcx1](https://github.com/kcx1))*
+- [`886cd2e`](https://github.com/kcx1/qplug/commit/886cd2e334ee1307fdb70eaa9ec049df359c2ee3) - Cleanup TODOs *(commit by [@kcx1](https://github.com/kcx1))*
+- [`3b4a862`](https://github.com/kcx1/qplug/commit/3b4a86254afabb9ffd2ec6155e7b7251cd06c70a) - Update packages and TODO *(commit by [@kcx1](https://github.com/kcx1))*
+- [`878ca27`](https://github.com/kcx1/qplug/commit/878ca27d7276cc56530540f6bd85cbbc2f52c40e) - Cleanup and error files *(commit by [@kcx1](https://github.com/kcx1))*
+- [`c172651`](https://github.com/kcx1/qplug/commit/c17265182431a21d4bfb2ec00661905f16e6c226) - Update the pkg version *(commit by [@kcx1](https://github.com/kcx1))*
+
+
+## [3.1] - 2025-02-06
+### :sparkles: New Features
+- [`290920f`](https://github.com/kcx1/qplug/commit/290920f50ef55d46cfca6952755155e1bc42a46f) - Adds ability to specify a path to copy compilted .qplug file into *(commit by [@kcx1](https://github.com/kcx1))*
+- [`e96a583`](https://github.com/kcx1/qplug/commit/e96a583c5ac9e2ffeeefde9d9994113c755ca4bb) - Create a build path; allow copy path to be optional *(commit by [@kcx1](https://github.com/kcx1))*
+- [`63d4e86`](https://github.com/kcx1/qplug/commit/63d4e86ae92938aa363f6fb19236cfb854f3ca58) - Create a build only flag *(commit by [@kcx1](https://github.com/kcx1))*
+- [`e3fe204`](https://github.com/kcx1/qplug/commit/e3fe204969b2b9093fc976a4f0e604e514c79a2f) - Removes the copy command in favor of an option under the build command *(commit by [@kcx1](https://github.com/kcx1))*
+- [`a455dba`](https://github.com/kcx1/qplug/commit/a455dbae29243745a1c3bfde1dfdbb3e2cc2c37e) - Remove Build Path as option *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :bug: Bug Fixes
+- [`ee5c885`](https://github.com/kcx1/qplug/commit/ee5c8859319063c74d8c32f20d3f63055939f100) - Update packages to prevent vuln *(commit by [@kcx1](https://github.com/kcx1))*
+- [`9e520d0`](https://github.com/kcx1/qplug/commit/9e520d0e5b2c2c4317bc33ab326ab23d40cb7a42) - Fixes IDNA vuln *(commit by [@kcx1](https://github.com/kcx1))*
+
+### :wrench: Chores
+- [`b0d33dd`](https://github.com/kcx1/qplug/commit/b0d33ddec4b9c83c74a012bfc51554537ee2ac26) - Fix typo *(commit by [@kcx1](https://github.com/kcx1))*
+- [`b0a3262`](https://github.com/kcx1/qplug/commit/b0a3262f05dfa1639c87962ccadc2dd0d0e37da2) - Fix Typo *(commit by [@kcx1](https://github.com/kcx1))*
+- [`b097a60`](https://github.com/kcx1/qplug/commit/b097a60c6ba1063cd9bc367db2a7998efb56c426) - Update phrasing *(commit by [@kcx1](https://github.com/kcx1))*
+- [`4a35d4a`](https://github.com/kcx1/qplug/commit/4a35d4acf1a913dba4fb42b8a35c653ffe76c33b) - Clean up *(commit by [@kcx1](https://github.com/kcx1))*
+- [`886cd2e`](https://github.com/kcx1/qplug/commit/886cd2e334ee1307fdb70eaa9ec049df359c2ee3) - Cleanup TODOs *(commit by [@kcx1](https://github.com/kcx1))*
+- [`3b4a862`](https://github.com/kcx1/qplug/commit/3b4a86254afabb9ffd2ec6155e7b7251cd06c70a) - Update packages and TODO *(commit by [@kcx1](https://github.com/kcx1))*
+- [`878ca27`](https://github.com/kcx1/qplug/commit/878ca27d7276cc56530540f6bd85cbbc2f52c40e) - Cleanup and error files *(commit by [@kcx1](https://github.com/kcx1))*
+- [`c172651`](https://github.com/kcx1/qplug/commit/c17265182431a21d4bfb2ec00661905f16e6c226) - Update the pkg version *(commit by [@kcx1](https://github.com/kcx1))*
+
+
 ## [0.3.0] - 2024-09-26
 ### :sparkles: New Features
 - [`e8c465d`](https://github.com/kcx1/qplug/commit/e8c465dd3349dedbdef2bcd0d56fc9095c4ba9e2) - Enable users to check version, is_qplug, and config
@@ -28,3 +82,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.2.2]: https://github.com/kcx1/qplug/compare/0.2.1...0.2.2
 [0.3.0]: https://github.com/kcx1/qplug/compare/0.2.2...0.3.0
+[3.1]: https://github.com/kcx1/qplug/compare/0.3.0...3.1
+[0.3.1]: https://github.com/kcx1/qplug/compare/0.3.0...0.3.1
+[0.3.2]: https://github.com/kcx1/qplug/compare/0.3.1...0.3.2

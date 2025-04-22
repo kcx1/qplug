@@ -163,7 +163,6 @@ impl PluginInfo {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
     use tempfile;
 
     use crate::assets::INFO_LUA;
