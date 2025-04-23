@@ -36,6 +36,7 @@ type Tool = Box<dyn Fn()>;
 
 pub struct Config<'a> {
     pub build_tool: Tool,
+    pub encryption_tool: Tool,
     pub template: Template<'a>,
     pub me: Author,
     pub plugin_dir: Option<PathBuf>, // path to the Q-Sys plugin directory. Not needed on Windows
@@ -57,6 +58,21 @@ impl Config<'_> {
                 })
             }
             _ => Box::new(default_build_tool),
+        };
+
+        let default_encryption_tool = || {
+            let _ = crate::cli::subcommands::encrypt::default_encryption_tool();
+        };
+
+        // Determine which build_tool to use
+        let encryption_tool: Box<dyn Fn()> = match &user_config.encryption_tool {
+            Value::Function(f) => {
+                let f_clone = f.clone();
+                Box::new(move || {
+                    let _ = f_clone.call::<()>(());
+                })
+            }
+            _ => Box::new(default_encryption_tool),
         };
 
         // Determine which template to use
@@ -92,6 +108,7 @@ impl Config<'_> {
 
         Ok(Config {
             build_tool,
+            encryption_tool,
             template,
             me,
             plugin_dir: qsys_plugin_dir,
@@ -101,7 +118,8 @@ impl Config<'_> {
 
 #[derive(Serialize, Debug, Clone)]
 pub struct UserConfig {
-    pub build_tool: Value,        // default to built-in
+    pub build_tool: Value, // default to built-in
+    pub encryption_tool: Value,
     pub external_template: Value, // can be path or url - default to built-in template
     pub me: Value,
     pub plugin_dir: Value,
@@ -120,6 +138,7 @@ impl UserConfig {
                 let lua_config = lua.create_table()?;
                 lua_config.set("external_template", Value::Nil)?;
                 lua_config.set("build_tool", Value::Nil)?;
+                lua_config.set("encryption_tool", Value::Nil)?;
                 lua_config.set("me", Value::Nil)?;
                 lua_config
             }
@@ -130,6 +149,7 @@ impl UserConfig {
         Ok(UserConfig {
             external_template: user_config.get("external_template").unwrap_or(Value::Nil),
             build_tool: user_config.get("build_tool").unwrap_or(Value::Nil),
+            encryption_tool: user_config.get("encryption_tool").unwrap_or(Value::Nil),
             me: user_config.get("me").unwrap_or(Value::Nil),
             plugin_dir: user_config.get("plugin_dir").unwrap_or(Value::Nil),
         })

@@ -111,6 +111,24 @@ pub fn cli() -> Command {
                         .required(true),
                 ),
         )
+        .subcommand(
+            Command::new("encrypt")
+                .hide(true)
+                .about("Encrypt the qplug file.")
+                .long_about("Encryption wrapper for the offical Q-SYS plugin encryption tool. This tool is not responsible for encrypting the plugin file itself, only the wrapper. Note: The default version only works in Windows. However, you can define your own in the config file.")
+                .subcommand(
+                    Command::new("install")
+                    .about("Install the official Q-SYS encryption tool.")
+                ) 
+                // .arg(
+                //     Arg::new("Install")
+                //         .long("install")
+                //         .short('i')
+                //         .help("Install the official encryption tool.")
+                //         .default_value("false")
+                //         .action(ArgAction::SetTrue)
+                // )
+        )
 }
 
 pub fn get_arg(arg_id: &str) {

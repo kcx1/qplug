@@ -81,6 +81,10 @@ fn main() {
             let mut app = Command::new(APP_NAME);
             generate(*shell, &mut app, APP_NAME, &mut io::stdout());
         }
+        Some(("encrypt", sub_matches)) => match sub_matches.subcommand() {
+            Some(("install", _encrypt_matches)) => cli::subcommands::encrypt::install_encryption(),
+            _ => cli::subcommands::encrypt::encrypt(env).expect("Failed to encrypt plugin"),
+        },
         _ => unreachable!(),
     }
 }
