@@ -3,6 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::Context;
+
 use super::config::Template;
 
 pub const MARKER_FILE: &str = ".qplug";
@@ -32,17 +34,17 @@ impl Entry {
 }
 
 pub trait Extractable {
-    fn extract(&self, dest: &Path) -> io::Result<()>;
+    fn extract(&self, dest: &Path) -> anyhow::Result<()>;
 }
 
 impl Extractable for include_dir::Dir<'_> {
-    fn extract(&self, base_path: &Path) -> io::Result<()> {
-        include_dir::Dir::extract(self, base_path)
+    fn extract(&self, base_path: &Path) -> anyhow::Result<()> {
+        Ok(include_dir::Dir::extract(self, base_path)?)
     }
 }
 
 impl Extractable for Path {
-    fn extract(&self, dest: &Path) -> io::Result<()> {
+    fn extract(&self, dest: &Path) -> anyhow::Result<()> {
         if self.is_dir() {
             //Create the destination directory
             fs::create_dir_all(dest)?;
@@ -61,44 +63,53 @@ impl Extractable for Path {
         } else if self.is_file() {
             fs::copy(self, dest)?;
         } else {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Not a file or dir",
-            ));
+            return Err(anyhow::anyhow!(format!(
+                "Not a file or a directory: {}",
+                io::ErrorKind::InvalidInput
+            )));
         };
         Ok(())
     }
 }
 
 impl Extractable for Template<'_> {
-    fn extract(&self, dest: &Path) -> io::Result<()> {
+    fn extract(&self, dest: &Path) -> anyhow::Result<()> {
         match self {
             Template::FileSystem(p) => p.extract(dest),
-            Template::InMemoryDir(d) => d.extract(dest),
+            Template::InMemoryDir(d) => Ok(d.extract(dest)?),
             Template::Url(_) => unimplemented!(),
         }
     }
 }
 
-pub fn copy_dir(source: &Template, dest: &Path) -> Result<(), io::Error> {
+pub fn copy_dir(source: &Template, dest: &Path) -> anyhow::Result<()> {
     // Extract the contents from the source to the destination.
     source.extract(dest)
 }
 
-pub fn create_marker_file(root_path: &Path) {
+pub fn create_marker_file(root_path: &Path) -> anyhow::Result<()> {
     //TODO: Create some cache of other relevant files here such as path to the init.lua file. And
     //the path to the info.lua file for the project.
-    fs::write(root_path.join(MARKER_FILE), "return {}").expect("Failed to write marker file");
+    fs::write(root_path.join(MARKER_FILE), "return {}")?;
+    Ok(())
 }
 
+/// Search the parent directories for the marker file.
+/// Starts from the given path.
 pub fn find_project_dir(path: Option<&Path>) -> Option<PathBuf> {
     search_parents(MARKER_FILE, path)
+    // match search_parents(MARKER_FILE, path) {
+    //     Some(path) => Ok(path),
+    //     None => Err(anyhow::anyhow!("Could not find marker file")),
+    // }
 }
 
+/// Searches the parent directories for a file from the starting path.
+/// Rturns the directory if the file is found, or None if not.
 fn search_parents(file: &str, starting_path: Option<&Path>) -> Option<PathBuf> {
     let mut current_dir = match starting_path {
         Some(path) => path.into(),
-        None => pwd(),
+        None => pwd().ok()?,
     };
 
     loop {
@@ -132,9 +143,9 @@ pub fn find_file_recursively(dir: &Path, file_name: &str) -> Option<PathBuf> {
     None
 }
 
-pub fn pwd() -> PathBuf {
+pub fn pwd() -> anyhow::Result<PathBuf> {
     std::env::current_dir()
-        .expect("Failed to get current directory. Please check your permissions.")
+        .context("Failed to get current directory. Please check your permissions.")
 }
 
 #[cfg(test)]
@@ -147,68 +158,71 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
-    fn test_extract_path_to_existing_directory() {
-        let temp_dir = tempdir().unwrap();
+    fn test_extract_path_to_existing_directory() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let src_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("dest");
 
         // Create source directory and files
-        fs::create_dir(&src_dir).unwrap();
+        fs::create_dir(&src_dir)?;
         let src_file_path = src_dir.join("file.txt");
-        let mut src_file = File::create(&src_file_path).unwrap();
-        writeln!(src_file, "Hello, world!").unwrap();
+        let mut src_file = File::create(&src_file_path)?;
+        writeln!(src_file, "Hello, world!")?;
 
         // Extract to destination directory
-        src_dir.extract(&dest_dir).unwrap();
+        src_dir.extract(&dest_dir)?;
 
         // Verify the file was copied
-        let copied_file_content = fs::read_to_string(dest_dir.join("file.txt")).unwrap();
+        let copied_file_content = fs::read_to_string(dest_dir.join("file.txt"))?;
         assert_eq!(copied_file_content, "Hello, world!\n");
+        Ok(())
     }
 
     #[test]
-    fn test_extract_path_to_non_existing_directory() {
-        let temp_dir = tempdir().unwrap();
+    fn test_extract_path_to_non_existing_directory() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let src_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("non_existing_dest");
 
         // Create source directory and files
-        fs::create_dir(&src_dir).unwrap();
+        fs::create_dir(&src_dir)?;
         let src_file_path = src_dir.join("file.txt");
-        let mut src_file = File::create(&src_file_path).unwrap();
-        writeln!(src_file, "Hello, world!").unwrap();
+        let mut src_file = File::create(&src_file_path)?;
+        writeln!(src_file, "Hello, world!")?;
 
         // Extract to non-existing destination directory
-        src_dir.extract(&dest_dir).unwrap();
+        src_dir.extract(&dest_dir)?;
 
         // Verify the file was copied
-        let copied_file_content = fs::read_to_string(dest_dir.join("file.txt")).unwrap();
+        let copied_file_content = fs::read_to_string(dest_dir.join("file.txt"))?;
         assert_eq!(copied_file_content, "Hello, world!\n");
+        Ok(())
     }
 
     #[test]
-    fn test_extract_file_to_path() {
-        let temp_dir = tempdir().unwrap();
+    fn test_extract_file_to_path() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let src_file_path = temp_dir.path().join("file.txt");
         let dest_file_path = temp_dir.path().join("copied_file.txt");
 
         // Create source file
-        let mut src_file = File::create(&src_file_path).unwrap();
-        writeln!(src_file, "Hello, world!").unwrap();
+        let mut src_file = File::create(&src_file_path)?;
+        writeln!(src_file, "Hello, world!")?;
 
         // Extract file to destination path
-        src_file_path.extract(&dest_file_path).unwrap();
+        src_file_path.extract(&dest_file_path)?;
 
         // Verify the file was copied
-        let copied_file_content = fs::read_to_string(dest_file_path).unwrap();
+        let copied_file_content = fs::read_to_string(dest_file_path)?;
         assert_eq!(copied_file_content, "Hello, world!\n");
+        Ok(())
     }
 
     #[test]
-    fn test_copy_dir_from_in_memory() {
-        let temp_dir = tempdir().unwrap();
+    fn test_copy_dir_from_in_memory() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let dest_dir = temp_dir.path().join("in_memory_dest");
-        std::fs::create_dir_all(&dest_dir).unwrap();
+        std::fs::create_dir_all(&dest_dir)?;
 
         assert!(dest_dir.exists());
 
@@ -218,51 +232,56 @@ mod tests {
         // Verify some expected file or directory exists in the destination
         let expected_file_path = TEMPLATE_DIR.get_entry("init.lua");
         assert!(expected_file_path.is_some());
+        Ok(())
     }
 
     #[test]
-    fn test_create_marker_file() {
-        let temp_dir = tempdir().unwrap();
+    fn test_create_marker_file() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let root_path = temp_dir.path();
 
         // Create marker file
-        create_marker_file(root_path);
+        create_marker_file(root_path)?;
 
         // Verify the marker file was created
         let marker_file_path = root_path.join(MARKER_FILE);
         assert!(marker_file_path.exists());
+
+        Ok(())
     }
 
     #[test]
-    fn test_find_marker_file() {
-        let temp_dir = tempdir().unwrap();
+    fn test_find_marker_file() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let root_path = temp_dir.path();
         let nested_dir = root_path.join("nested");
 
         // Create nested directory and marker file in root
-        fs::create_dir(&nested_dir).unwrap();
-        create_marker_file(root_path);
+        fs::create_dir(&nested_dir)?;
+        create_marker_file(root_path)?;
 
         // Find the marker file starting from the nested directory
-        let found_marker = find_project_dir(Some(root_path)).unwrap();
+        let found_marker = find_project_dir(Some(root_path));
 
         // Verify the correct directory was found
-        assert_eq!(found_marker, root_path.to_path_buf());
+        assert_eq!(found_marker, Some(root_path.to_path_buf()));
+        Ok(())
     }
 
     #[test]
-    fn test_find_marker_file_not_found() {
-        let temp_dir = tempdir().unwrap();
+    fn test_find_marker_file_not_found() -> anyhow::Result<()> {
+        let temp_dir = tempdir()?;
         let root_path = temp_dir.path();
         let nested_dir = root_path.join("nested");
 
         // Create nested directory without a marker file
-        fs::create_dir(&nested_dir).unwrap();
+        fs::create_dir(&nested_dir)?;
 
         // Try to find the marker file starting from the nested directory
-        let found_marker = find_project_dir(None);
+        let found_marker = find_project_dir(Some(&nested_dir));
 
         // Verify that no marker file was found
-        assert!(found_marker.is_none());
+        assert!(!found_marker.is_some());
+        Ok(())
     }
 }

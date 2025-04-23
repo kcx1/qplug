@@ -2,9 +2,9 @@ use std::{
     fs,
     io::{self, Write},
     path::{Path, PathBuf},
-    process::exit,
 };
 
+use anyhow::Context;
 use git2::Repository;
 use uuid::Uuid;
 
@@ -23,25 +23,24 @@ pub fn create_plugin(
     no_template: &bool,
     no_defs: &bool,
     user_env: UserEnv,
-) {
+) -> anyhow::Result<()> {
     // Check if name was provided - if not set name to parent directory
     let file_name: &String = match name {
         Some(name) => {
-            // Fail if the plugin already exists.
             if Path::exists(Path::new(&name))
                 || Path::exists(&Path::new(&name).join(PLUGIN_ROOT))
                 || Path::exists(Path::new(".qplug"))
             {
-                eprint!("The plugin already exists.");
-                exit(1);
+                // Fail if the plugin already exists.
+                return Err(anyhow::anyhow!("Plugin already exists"));
             }
             name
         }
         None => {
             if Path::exists(&Path::new(".").join(PLUGIN_ROOT)) || Path::exists(Path::new(".qplug"))
             {
-                eprint!("The plugin already exists.");
-                exit(1);
+                // Fail if the plugin already exists.
+                return Err(anyhow::anyhow!("Plugin already exists"));
             }
             &".".to_string()
         }
@@ -51,25 +50,27 @@ pub fn create_plugin(
     let plugin_path = root_path.join(PLUGIN_ROOT);
 
     // Create plugin directories
-    fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
+    fs::create_dir_all(&plugin_path)
+        .context("Failed to create plugin directories. Some may already exist")?;
 
     // fetch the template based on the user's config. Default to internal template if none set.
-    fetch_template(&plugin_path, &user_env.config.template);
+    fetch_template(&plugin_path, &user_env.config.template)?;
 
     if !no_template {
-        fs::create_dir_all(&plugin_path).expect("Directory creation failed.");
-        fetch_template(plugin_path.as_path(), &user_env.config.template);
+        fs::create_dir_all(&plugin_path)
+            .context("Failed to create template. Some of the directories may already exist.")?;
+        fetch_template(plugin_path.as_path(), &user_env.config.template)?;
         println!("Template initialized");
     }
 
     if !no_defs {
-        add_lua_defs(root_path);
+        add_lua_defs(root_path).context("Failed to create lua definitions.")?;
         println!("Definitions initialized");
     }
 
     // Init git repo
     if !no_git {
-        init_git(root_path);
+        init_git(root_path).context("Failed to init git repo")?;
         println!("Git initialized");
     }
 
@@ -86,7 +87,7 @@ pub fn create_plugin(
     if plugin_name == "." {
         println!(
             "New plugin created: {:?}",
-            std::env::current_dir().unwrap().file_name().unwrap()
+            std::env::current_dir()?.file_name().unwrap()
         );
     } else {
         println!("New plugin created: {}", plugin_name);
@@ -94,43 +95,40 @@ pub fn create_plugin(
 
     // Write the info.lua file
     let info_lua_file = files::find_file_recursively(&plugin_path, "info.lua");
-    let info = get_user_info(plugin_name, None, user_env.config);
-    match info_lua_file {
-        Some(file) => {
-            info.write_to_file(file, user_env.lua)
-                .expect("Failed to write info.lua");
-        }
-        None => {
-            eprintln!("Could not find template info.lua. If you would like qplug to update it when building, please create one.");
-        }
-    }
+    let info = get_user_info(plugin_name, None, user_env.config)?;
+    info.write_to_file(info_lua_file.unwrap(), user_env.lua)
+        .context("Failed to write info.lua")?;
 
-    create_marker_file(root_path);
+    create_marker_file(root_path)?;
+    Ok(())
 }
 
-//TODO: Cleanup signature - Returns not currently being used.
-pub fn fetch_template(path: &Path, template: &Template) -> PathBuf {
-    // path = path to plugin dir
+pub fn fetch_template(plugin_dir: &Path, template: &Template) -> anyhow::Result<PathBuf> {
     // let url = "https://github.com/qsys-plugins/BasePlugin";
     match template {
-        Template::Url(s) => match Repository::clone(s, path) {
-            Ok(repo) => repo.path().to_path_buf(),
-            Err(e) => panic!("Failed to clone: {}", e),
-        },
+        Template::Url(s) => Ok(Repository::clone(s, plugin_dir)
+            .context("Failed to clone")?
+            .path()
+            .to_path_buf()),
         Template::FileSystem(_) => {
-            copy_dir(template, path).expect("Failed to copy user template");
-            path.to_path_buf()
+            copy_dir(template, plugin_dir)
+                .with_context(|| format!("Failed to copy {:?} to {:?}.", template, plugin_dir))?;
+            Ok(plugin_dir.to_path_buf())
         }
         Template::InMemoryDir(_) => {
-            copy_dir(template, path).expect("Failed to copy built-in template");
-            path.to_path_buf()
+            copy_dir(template, plugin_dir).context("Failed to copy built-in template")?;
+            Ok(plugin_dir.to_path_buf())
         }
     }
 }
 
-fn get_user_info(name: &String, existing_info: Option<PluginInfo>, config: &Config) -> PluginInfo {
+fn get_user_info(
+    name: &String,
+    existing_info: Option<PluginInfo>,
+    config: &Config,
+) -> anyhow::Result<PluginInfo> {
     match existing_info {
-        Some(config) => config,
+        Some(config) => Ok(config),
         None => {
             // Author Name
             let author = match &config.me.name {
@@ -142,42 +140,40 @@ fn get_user_info(name: &String, existing_info: Option<PluginInfo>, config: &Conf
                     println!("Enter your name: ");
                     io::stdin()
                         .read_line(&mut author)
-                        .expect("Oops, Could not read your name.");
+                        .context("Oops, Could not read your name.")?;
                     author
                 }
             };
 
             // Description
-            io::stdout().flush().unwrap();
+            io::stdout().flush()?;
             let mut description = String::new();
             println!("Enter a description for your plugin: ");
             io::stdin()
                 .read_line(&mut description)
-                .expect("Oops, Could not read description.");
+                .context("Oops, Could not read description.")?;
 
-            PluginInfo {
+            Ok(PluginInfo {
                 name: name.to_string(),
                 version: "0.0.0.0".to_string(),
                 build_version: "0.0.0.0".to_string(),
                 id: Uuid::new_v4().to_string(),
                 author: author.trim().to_string(),
                 description: description.trim().to_string(),
-            }
+            })
         }
     }
 }
 
-pub fn add_lua_defs(root_path: &Path) {
+pub fn add_lua_defs(root_path: &Path) -> anyhow::Result<()> {
     // Add Lua Defs
     let defs_path = root_path.join("definitions");
-    fs::create_dir(&defs_path).expect("Directory creation failed.");
+    fs::create_dir(&defs_path).context("Directory creation failed.")?;
     copy_dir(&Template::InMemoryDir(&DEFINITIONS_DIR), &defs_path)
-        .expect("Failed to copy definitions.");
+        .with_context(|| format!("Failed to copy {:?} to {:?}", DEFINITIONS_DIR, &defs_path))?;
+    Ok(())
 }
 
-pub fn init_git(path: &Path) -> Repository {
-    match Repository::init(path) {
-        Ok(repo) => repo,
-        Err(e) => panic!("Failed to initialize git repo: {}", e),
-    }
+pub fn init_git(path: &Path) -> anyhow::Result<Repository> {
+    Repository::init(path).context("Failed to initialize local git repo")
 }

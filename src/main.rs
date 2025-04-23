@@ -18,10 +18,10 @@ fn main() {
 
     let lua_env = create_lua_env();
 
-    load_api(&lua_env);
+    load_api(&lua_env).expect("Failto load API");
 
-    let user_config = UserConfig::new(&lua_env);
-    let config = Config::from_user_config(&user_config);
+    let user_config = UserConfig::new(&lua_env).expect("Failed to create User Config Instance");
+    let config = Config::from_user_config(&user_config).expect("Failde to load User config");
 
     let env = UserEnv {
         lua: &lua_env,
@@ -40,7 +40,8 @@ fn main() {
             let no_template = sub_matches
                 .get_one::<bool>("Disable Template Creation")
                 .unwrap();
-            cli::subcommands::new::create_plugin(name, no_git, no_template, no_defs, env);
+            cli::subcommands::new::create_plugin(name, no_git, no_template, no_defs, env)
+                .expect("Failed to create plugin project");
         }
         Some(("build", sub_matches)) => {
             let version = sub_matches
@@ -54,7 +55,8 @@ fn main() {
                 env,
                 copy_path,
                 build_only,
-            );
+            )
+            .expect("Failed to build plugin project");
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());

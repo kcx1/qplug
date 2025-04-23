@@ -1,7 +1,7 @@
 use self_update::backends::github;
 use self_update::cargo_crate_version;
 
-pub fn update(version: &Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn update(version: &Option<&str>) -> anyhow::Result<()> {
     // Create a builder for the update
     let mut status = github::UpdateBuilder::new();
 
@@ -40,7 +40,7 @@ mod tests {
     // use super::*;
 
     #[test]
-    fn get_releases() -> Result<(), Box<dyn std::error::Error>> {
+    fn get_releases() -> anyhow::Result<()> {
         let releases = self_update::backends::github::ReleaseList::configure()
             .repo_owner("kcx1")
             .repo_name("qplug")

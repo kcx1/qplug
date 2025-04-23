@@ -1,3 +1,4 @@
+use anyhow::Context;
 use std::path::PathBuf;
 
 use crate::config::Config;
@@ -11,40 +12,42 @@ struct FileInfo {
     path: PathBuf,
 }
 
-fn get_compiled_file() -> FileInfo {
-    let marker_file = find_project_dir(None).expect("You might not be in a plugin directory.");
+fn get_compiled_file() -> anyhow::Result<FileInfo> {
+    let marker_file = find_project_dir(None).context("You might not be in a plugin directory.")?;
     let file_name = marker_file
         .file_name()
-        .expect("Compiled qplug file not found. Please build or compile it first.")
+        .context("Compiled qplug file not found. Please build or compile it first.")?
         .to_string_lossy();
 
-    FileInfo {
+    Ok(FileInfo {
         name: file_name.to_string(),
         path: marker_file.join(format!("{file_name}.qplug")),
-    }
+    })
 }
 
 #[allow(dead_code)]
-fn get_qsys_plugin_dir() -> PathBuf {
-    let user_dir = directories::UserDirs::new().expect("Unable to locate user dir.");
-    let docs = user_dir.document_dir().expect("Unable to locate docs dir.");
-    docs.join("QSC").join("Q-Sys Designer").join("Plugins")
+fn get_qsys_plugin_dir() -> anyhow::Result<PathBuf> {
+    let user_dir = directories::UserDirs::new().context("Unable to locate user dir.")?;
+    let docs = user_dir
+        .document_dir()
+        .context("Unable to locate docs dir.")?;
+    Ok(docs.join("QSC").join("Q-Sys Designer").join("Plugins"))
 }
 
-fn copy_files(source_file: FileInfo, destination: &PathBuf) -> Result<u64, std::io::Error> {
+fn copy_files(source_file: FileInfo, destination: &PathBuf) -> anyhow::Result<u64> {
     println!(
         "Copying from {} to {}",
         source_file.path.display(),
         destination.display()
     );
-    std::fs::copy(source_file.path, destination)
+    Ok(std::fs::copy(source_file.path, destination)?)
 }
 
 pub fn copy_to_plugin_directory(
     config: &Config,
     copy_path: Option<&String>,
-) -> Result<u64, std::io::Error> {
-    let source_file = get_compiled_file();
+) -> anyhow::Result<u64> {
+    let source_file = get_compiled_file()?;
     match copy_path {
         // A path is passed as an argument
         Some(destination) => copy_files(source_file, &PathBuf::from(destination)),
@@ -55,9 +58,9 @@ pub fn copy_to_plugin_directory(
                 // Try using a path declared in the config. Otherwise, use to the Q-Sys Designer plugin directory
                 let destination = match &config.plugin_dir {
                     Some(destination) => destination,
-                    None => &get_qsys_plugin_dir().join(format!("{}.qplug", source_file.name)),
+                    None => &get_qsys_plugin_dir()?.join(format!("{}.qplug", source_file.name)),
                 };
-                copy_files(source_file, &destination)
+                copy_files(source_file, destination)
             }
             #[cfg(not(windows))]
             {
