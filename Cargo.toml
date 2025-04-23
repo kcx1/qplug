@@ -1,6 +1,6 @@
 [package]
 name = "qplug"
-version = "0.3.3"
+version = "0.4.0"
 authors = ["Casey C <kcx1codes@gmail.com>"]
 description = "CLI toolchain for managing Q-Sys plugins"
 license = "MIT"
