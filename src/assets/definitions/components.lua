@@ -76,4 +76,4 @@ Component.GetControls = function(Name) end
 ---```
 --- @param Name string The name of the component
 --- @return Components # The newly created Component instance
-function Component:New(Name) end
+function Component.New(Name) end
