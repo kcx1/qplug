@@ -36,7 +36,7 @@ fn get_qsys_plugin_dir() -> anyhow::Result<PathBuf> {
 
 fn copy_files(source_file: FileInfo, destination: &PathBuf) -> anyhow::Result<u64> {
     println!(
-        "Copying from {} to {}",
+        "Copying from {:?} to {:?}",
         source_file.path.display(),
         destination.display()
     );
@@ -45,12 +45,12 @@ fn copy_files(source_file: FileInfo, destination: &PathBuf) -> anyhow::Result<u6
 
 pub fn copy_to_plugin_directory(
     config: &Config,
-    copy_path: Option<&String>,
+    copy_path: Option<&PathBuf>,
 ) -> anyhow::Result<u64> {
     let source_file = get_compiled_file()?;
     match copy_path {
         // A path is passed as an argument
-        Some(destination) => copy_files(source_file, &PathBuf::from(destination)),
+        Some(destination) => copy_files(source_file, destination),
         // No path is passed as an argument
         None => {
             #[cfg(windows)]

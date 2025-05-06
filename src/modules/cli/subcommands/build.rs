@@ -25,7 +25,7 @@ pub fn build(
     version: VersionType,
     info_path: PathBuf,
     user_env: UserEnv,
-    copy_path: Option<&String>,
+    copy_path: Option<&PathBuf>,
     build_only: bool,
 ) -> anyhow::Result<()> {
     //TODO: Have user_env.config.build_tool return a Result. Use unwrap_or_else. This would mean
