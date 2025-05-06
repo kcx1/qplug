@@ -35,12 +35,14 @@ pub fn cli() -> Command {
                 .arg(
                     Arg::new("Disable Git")
                         .long("no-git")
+                        .short('g')
                         .default_value("false")
                         .action(ArgAction::SetTrue),
                 )
                 .arg(
-                    Arg::new("Disable Lua Definitions")
-                        .long("no-defs")
+                    Arg::new("Install a local copy of the Q-Sys Lua Definitions to your repo.")
+                        .long("local-defs")
+                        .short('d')
                         .default_value("false")
                         .action(ArgAction::SetTrue),
                 )
