@@ -82,6 +82,11 @@ fn main() {
             let mut app = Command::new(APP_NAME);
             generate(*shell, &mut app, APP_NAME, &mut io::stdout());
         }
+        Some(("install", sub_mathces)) => {
+            let thing_to_install =
+                sub_mathces.get_one::<subcommands::install::Installables>("install");
+            subcommands::install::install(thing_to_install);
+        }
         Some(("encrypt", sub_matches)) => {
             let tool_args: Vec<String> = sub_matches
                 .get_many::<String>("tool")

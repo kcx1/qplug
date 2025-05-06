@@ -3,7 +3,7 @@ use clap::{
     Command,
 };
 use clap_complete::Shell;
-use subcommands::{build::VersionType, check::CheckOption};
+use subcommands::{build::VersionType, check::CheckOption, install::Installables};
 
 pub mod subcommands;
 
@@ -99,6 +99,14 @@ pub fn cli() -> Command {
                 .value_parser(value_parser!(CheckOption))
                 .ignore_case(true)
                 .default_value("qplug")
+            )
+        )
+        .subcommand(Command::new("install")
+            .about("Install helper")
+            .arg(
+                Arg::new("install")
+                    .value_parser(value_parser!(Installables))
+                    .action(ArgAction::Set)
             )
         )
         //Generate shell completion
