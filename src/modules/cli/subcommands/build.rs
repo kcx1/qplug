@@ -33,12 +33,12 @@ pub fn build(
     //leverage better locality of behavior, but would work better if there are custom error handling.
     let build_tool = &user_env.config.build_tool;
     if build_only {
-        build_tool();
+        build_tool(None);
         return Ok(());
     }
 
     update_version(version, info_path, user_env.lua)?;
-    build_tool();
+    build_tool(None);
     copy_to_plugin_directory(user_env.config, copy_path).context("Could not copy plugin")?;
     Ok(())
 }

@@ -32,7 +32,7 @@ pub enum Template<'a> {
     InMemoryDir(&'a include_dir::Dir<'static>),
 }
 
-type Tool = Box<dyn Fn()>;
+type Tool = Box<dyn Fn(Option<Value>)>;
 
 pub struct Config<'a> {
     pub build_tool: Tool,
@@ -43,33 +43,30 @@ pub struct Config<'a> {
 }
 
 impl Config<'_> {
-    pub fn from_user_config(user_config: &UserConfig) -> anyhow::Result<Self> {
+    pub fn from_user_config(user_config: UserConfig) -> anyhow::Result<Self> {
         // Internal implementation as a callable
-        let default_build_tool = || {
+        let default_build_tool = |_opts| {
             let _ = crate::cli::subcommands::build::default_build_tool();
         };
 
         // Determine which build_tool to use
-        let build_tool: Box<dyn Fn()> = match &user_config.build_tool {
-            Value::Function(f) => {
-                let f_clone = f.clone();
-                Box::new(move || {
-                    let _ = f_clone.call::<()>(());
-                })
-            }
+        let build_tool: Tool = match user_config.build_tool {
+            Value::Function(f) => Box::new(move |opts| {
+                let _ = f.call::<()>(opts);
+            }),
             _ => Box::new(default_build_tool),
         };
 
-        let default_encryption_tool = || {
+        let default_encryption_tool = |_opts| {
             let _ = crate::cli::subcommands::encrypt::default_encryption_tool();
         };
 
         // Determine which build_tool to use
-        let encryption_tool: Box<dyn Fn()> = match &user_config.encryption_tool {
+        let encryption_tool: Tool = match user_config.encryption_tool {
             Value::Function(f) => {
-                let f_clone = f.clone();
-                Box::new(move || {
-                    let _ = f_clone.call::<()>(());
+                Box::new(move |opts| {
+                    // NOTE: This argument call is untested! Be sure to test!
+                    let _ = f.call::<Option<Vec<String>>>(opts);
                 })
             }
             _ => Box::new(default_encryption_tool),

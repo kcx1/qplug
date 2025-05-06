@@ -81,10 +81,17 @@ fn main() {
             let mut app = Command::new(APP_NAME);
             generate(*shell, &mut app, APP_NAME, &mut io::stdout());
         }
-        Some(("encrypt", sub_matches)) => match sub_matches.subcommand() {
-            Some(("install", _encrypt_matches)) => cli::subcommands::encrypt::install_encryption(),
-            _ => cli::subcommands::encrypt::encrypt(env).expect("Failed to encrypt plugin"),
-        },
-        _ => unreachable!(),
+        Some(("encrypt", sub_matches)) => {
+            let tool_args: Vec<String> = sub_matches
+                .get_many::<String>("tool")
+                .unwrap()
+                .cloned()
+                .collect();
+            subcommands::encrypt::encrypt(env, Some(tool_args)).expect("Failed to encrypt plugin")
+        }
+        Some((_, _)) => todo!("Some tuple not implemented"),
+        None => {
+            todo!("Sorry this feature is not implemented")
+        }
     }
 }
