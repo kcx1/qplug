@@ -45,7 +45,8 @@ mod tests {
             .repo_owner("kcx1")
             .repo_name("qplug")
             .build()?
-            .fetch()?;
+            .fetch()
+            .expect("\nMake sure that you are connected to the internet!\n\n");
         println!("found releases:");
         println!("{:#?}\n", releases);
 
