@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::Context;
 
-use super::config::Template;
+use super::template::Template;
 
 pub const MARKER_FILE: &str = ".qplug";
 

@@ -1,6 +1,6 @@
 use mlua::IntoLua;
 
-use crate::config::UserEnv;
+use crate::modules::user::UserEnv;
 
 // #[cfg("windows")]
 pub fn install_encryption() {

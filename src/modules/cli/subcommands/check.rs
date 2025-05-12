@@ -10,19 +10,21 @@ pub enum CheckOption {
     Config,
 }
 
-pub fn check(check_option: CheckOption) {
+pub fn check(check_option: CheckOption) -> anyhow::Result<()> {
     match check_option {
-        CheckOption::Version => println!("Qplug version: {}", env!("CARGO_PKG_VERSION")),
+        CheckOption::Version => Ok(println!("Qplug version: {}", env!("CARGO_PKG_VERSION"))),
         CheckOption::Qplug => {
             let marker_file = find_project_dir(None);
             match marker_file {
-                Some(f) => println!("Qplug plugin found! {:?}", f),
-                None => println!("Not a Qplug plugin. You may want to try `qplug init` or navigating to a qplug directory."),
+                Some(f) => Ok(println!("Qplug plugin found! {:?}", f)),
+                None => Ok(println!("Not a Qplug plugin. You may want to try `qplug init` or navigating to a qplug directory.")),
             }
         }
         CheckOption::Config => match find_config_file() {
-            Some(f) => println!("Config file found! {:?}", f),
-            None => println!("No config file found. You may want to try `qplug new`"),
+            Some(f) => Ok(println!("Config file found! {:?}", f)),
+            None => Ok(println!(
+                "No config file found. You may want to try `qplug new`"
+            )),
         },
     }
 }

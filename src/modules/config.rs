@@ -1,35 +1,16 @@
+use crate::modules::user::UserConfig;
 use directories::BaseDirs;
-use mlua::{
-    Lua, Table,
-    Value::{self, Nil},
-};
-use serde::Serialize;
-use std::{
-    fs::{self},
-    path::PathBuf,
-    str::FromStr,
-};
+use mlua::Value::{self};
+use std::{path::PathBuf, str::FromStr};
 
 use crate::assets::TEMPLATE_DIR;
 
-use super::files::{find_project_dir, pwd, MARKER_FILE};
-
-pub struct UserEnv<'a> {
-    pub lua: &'a Lua,
-    pub config: &'a Config<'a>,
-}
+use super::template::Template;
 
 pub struct Author {
     pub name: Option<String>,
     pub email: Option<String>,
     pub company: Option<String>,
-}
-
-#[derive(Debug)]
-pub enum Template<'a> {
-    Url(String),
-    FileSystem(PathBuf),
-    InMemoryDir(&'a include_dir::Dir<'static>),
 }
 
 type Tool = Box<dyn Fn(Option<Value>)>;
@@ -113,46 +94,6 @@ impl Config<'_> {
     }
 }
 
-#[derive(Serialize, Debug, Clone)]
-pub struct UserConfig {
-    pub build_tool: Value, // default to built-in
-    pub encryption_tool: Value,
-    pub external_template: Value, // can be path or url - default to built-in template
-    pub me: Value,
-    pub plugin_dir: Value,
-}
-
-impl UserConfig {
-    pub fn new(lua: &Lua) -> anyhow::Result<UserConfig> {
-        let user_config = match find_config_file() {
-            Some(path) => {
-                // Create a function that will return the table form the user config and call it
-                lua.load(fs::read_to_string(&path)?)
-                    .into_function()?
-                    .call(Nil)?
-            }
-            None => {
-                let lua_config = lua.create_table()?;
-                lua_config.set("external_template", Value::Nil)?;
-                lua_config.set("build_tool", Value::Nil)?;
-                lua_config.set("encryption_tool", Value::Nil)?;
-                lua_config.set("me", Value::Nil)?;
-                lua_config
-            }
-        };
-
-        overload_global_config(&user_config, None, lua)?;
-
-        Ok(UserConfig {
-            external_template: user_config.get("external_template").unwrap_or(Value::Nil),
-            build_tool: user_config.get("build_tool").unwrap_or(Value::Nil),
-            encryption_tool: user_config.get("encryption_tool").unwrap_or(Value::Nil),
-            me: user_config.get("me").unwrap_or(Value::Nil),
-            plugin_dir: user_config.get("plugin_dir").unwrap_or(Value::Nil),
-        })
-    }
-}
-
 pub fn find_config_file() -> Option<PathBuf> {
     fn return_config(config_file: PathBuf) -> Option<PathBuf> {
         if config_file.exists() {
@@ -168,36 +109,6 @@ pub fn find_config_file() -> Option<PathBuf> {
         None => {
             config_file = base_dirs.home_dir().join(".qplug.lua");
             return_config(config_file)
-        }
-    }
-}
-
-/// Overload the global config with either a user provided config or a marker file
-fn overload_global_config<'a>(
-    user_config: &'a Table,
-    local_config: Option<PathBuf>,
-    lua: &Lua,
-) -> anyhow::Result<&'a Table> {
-    // Either User provided config or find a marker file
-    let overload_config = local_config.or_else(|| {
-        Some(
-            find_project_dir(Some(&pwd().unwrap()))?
-                .join(MARKER_FILE)
-                .to_path_buf(),
-        )
-    });
-
-    match overload_config {
-        None => Ok(user_config),
-        Some(overload_config) => {
-            let new_config: Table = lua
-                .load(fs::read_to_string(overload_config)?)
-                .into_function()?
-                .call(Nil)?;
-
-            new_config.for_each(|key: Value, val: Value| user_config.set(key, val))?;
-
-            Ok(user_config)
         }
     }
 }

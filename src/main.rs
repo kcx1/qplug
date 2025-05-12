@@ -1,10 +1,12 @@
+use anyhow::Context;
 use clap::Command;
 use clap_complete::{generate, Shell};
 use mlua::Lua;
 use qplug::assets::INFO_LUA;
 use qplug::cli::{self, subcommands};
-use qplug::config::{Config, UserConfig, UserEnv};
+use qplug::config::Config;
 use qplug::lua::api::load_api;
+use qplug::modules::user::{UserConfig, UserEnv};
 use std::io::{self};
 use std::path::PathBuf;
 
@@ -14,15 +16,15 @@ fn create_lua_env() -> Lua {
 
 const APP_NAME: &str = "qplug";
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // std::env::set_var("RUST_BACKTRACE", "full");
 
     let lua_env = create_lua_env();
 
-    load_api(&lua_env).expect("Failto load API");
+    load_api(&lua_env).context("Failto load API")?;
 
-    let user_config = UserConfig::new(&lua_env).expect("Failed to create User Config Instance");
-    let config = Config::from_user_config(user_config).expect("Failde to load User config");
+    let user_config = UserConfig::new(&lua_env).context("Failed to create User Config Instance")?;
+    let config = Config::from_user_config(user_config).context("Failde to load User config")?;
 
     let env = UserEnv {
         lua: &lua_env,
@@ -42,7 +44,7 @@ fn main() {
                 .get_one::<bool>("Disable Template Creation")
                 .unwrap();
             subcommands::new::create_plugin(name, no_git, no_template, no_defs, env)
-                .expect("Failed to create plugin project");
+                .context("Failed to create plugin project")
         }
         Some(("build", sub_matches)) => {
             let version = sub_matches
@@ -57,35 +59,37 @@ fn main() {
                 copy_path,
                 build_only,
             )
-            .expect("Failed to build plugin project");
+            .context("Failed to build plugin project")
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());
 
-            subcommands::update::update(&version).expect("Could not update Q-Plug");
+            subcommands::update::update(&version).context("Could not update Q-Plug")
         }
         Some(("copy", sub_matches)) => {
             let default_dir = env.config.plugin_dir.clone().unwrap();
             let copy_path: Option<&PathBuf> =
                 sub_matches.get_one("Copy Path").or(Some(&default_dir));
             subcommands::copy::copy_to_plugin_directory(env.config, copy_path)
-                .expect("Could not copy plugin");
+                .context("Could not copy plugin")?;
+            Ok(())
         }
         Some(("check", sub_matches)) => {
             let check_option = sub_matches
                 .get_one::<subcommands::check::CheckOption>("Check Option")
                 .unwrap();
-            subcommands::check::check(check_option.to_owned());
+            subcommands::check::check(check_option.to_owned())
         }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
             let mut app = Command::new(APP_NAME);
             generate(*shell, &mut app, APP_NAME, &mut io::stdout());
+            Ok(())
         }
         Some(("install", sub_mathces)) => {
             let thing_to_install =
                 sub_mathces.get_one::<subcommands::install::Installables>("install");
-            subcommands::install::install(thing_to_install);
+            subcommands::install::install(thing_to_install).context("Failed to install.")
         }
         Some(("encrypt", sub_matches)) => {
             let tool_args: Vec<String> = sub_matches
@@ -93,7 +97,7 @@ fn main() {
                 .unwrap()
                 .cloned()
                 .collect();
-            subcommands::encrypt::encrypt(env, Some(tool_args)).expect("Failed to encrypt plugin")
+            subcommands::encrypt::encrypt(env, Some(tool_args)).context("Failed to encrypt plugin")
         }
         Some((_, _)) => todo!("Some tuple not implemented"),
         None => {

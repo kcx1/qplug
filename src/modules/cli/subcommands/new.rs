@@ -1,18 +1,15 @@
-use std::{
-    fs,
-    io::{self, Write},
-    path::{Path, PathBuf},
-};
+use crate::modules::template::Template;
+use crate::modules::user::UserEnv;
+use crate::modules::{git::init_git, template::create_template};
+use std::fs;
+use std::path::Path;
 
 use anyhow::Context;
-use git2::Repository;
-use uuid::Uuid;
 
 use crate::{
     assets::DEFINITIONS_DIR,
-    config::{Config, Template, UserEnv},
     files::{self, copy_dir, create_marker_file},
-    lua::info::PluginInfo,
+    modules::user::get_user_info,
 };
 
 const PLUGIN_ROOT: &str = "plugin_src";
@@ -21,7 +18,7 @@ pub fn create_plugin(
     name: Option<&String>,
     no_git: &bool,
     no_template: &bool,
-    no_defs: &bool,
+    local_defs: &bool,
     user_env: UserEnv,
 ) -> anyhow::Result<()> {
     // Check if name was provided - if not set name to parent directory
@@ -54,18 +51,16 @@ pub fn create_plugin(
         .context("Failed to create plugin directories. Some may already exist")?;
 
     // fetch the template based on the user's config. Default to internal template if none set.
-    fetch_template(&plugin_path, &user_env.config.template)?;
 
     if !no_template {
-        fs::create_dir_all(&plugin_path)
-            .context("Failed to create template. Some of the directories may already exist.")?;
-        fetch_template(plugin_path.as_path(), &user_env.config.template)?;
-        println!("Template initialized");
+        create_template(&plugin_path, &user_env)?
     }
 
-    if !no_defs {
+    if *local_defs {
         add_lua_defs(root_path).context("Failed to create lua definitions.")?;
         println!("Definitions initialized");
+    } else {
+        //TODO: Write the luals.json file
     }
 
     // Init git repo
@@ -103,77 +98,12 @@ pub fn create_plugin(
     Ok(())
 }
 
-pub fn fetch_template(plugin_dir: &Path, template: &Template) -> anyhow::Result<PathBuf> {
-    // let url = "https://github.com/qsys-plugins/BasePlugin";
-    match template {
-        Template::Url(s) => Ok(Repository::clone(s, plugin_dir)
-            .context("Failed to clone")?
-            .path()
-            .to_path_buf()),
-        Template::FileSystem(_) => {
-            copy_dir(template, plugin_dir)
-                .with_context(|| format!("Failed to copy {:?} to {:?}.", template, plugin_dir))?;
-            Ok(plugin_dir.to_path_buf())
-        }
-        Template::InMemoryDir(_) => {
-            copy_dir(template, plugin_dir).context("Failed to copy built-in template")?;
-            Ok(plugin_dir.to_path_buf())
-        }
-    }
-}
-
-fn get_user_info(
-    name: &String,
-    existing_info: Option<PluginInfo>,
-    config: &Config,
-) -> anyhow::Result<PluginInfo> {
-    match existing_info {
-        Some(config) => Ok(config),
-        None => {
-            // Author Name
-            let author = match &config.me.name {
-                // Get name from config file
-                Some(name) => name.to_owned(),
-                // If not set in config file, ask user
-                None => {
-                    let mut author = String::new();
-                    println!("Enter your name: ");
-                    io::stdin()
-                        .read_line(&mut author)
-                        .context("Oops, Could not read your name.")?;
-                    author
-                }
-            };
-
-            // Description
-            io::stdout().flush()?;
-            let mut description = String::new();
-            println!("Enter a description for your plugin: ");
-            io::stdin()
-                .read_line(&mut description)
-                .context("Oops, Could not read description.")?;
-
-            Ok(PluginInfo {
-                name: name.to_string(),
-                version: "0.0.0.0".to_string(),
-                build_version: "0.0.0.0".to_string(),
-                id: Uuid::new_v4().to_string(),
-                author: author.trim().to_string(),
-                description: description.trim().to_string(),
-            })
-        }
-    }
-}
-
 pub fn add_lua_defs(root_path: &Path) -> anyhow::Result<()> {
     // Add Lua Defs
     let defs_path = root_path.join("definitions");
     fs::create_dir(&defs_path).context("Directory creation failed.")?;
+    //TODO: Check to see if the definition folder has been downloaded. If so, prefer that.
     copy_dir(&Template::InMemoryDir(&DEFINITIONS_DIR), &defs_path)
         .with_context(|| format!("Failed to copy {:?} to {:?}", DEFINITIONS_DIR, &defs_path))?;
     Ok(())
-}
-
-pub fn init_git(path: &Path) -> anyhow::Result<Repository> {
-    Repository::init(path).context("Failed to initialize local git repo")
 }

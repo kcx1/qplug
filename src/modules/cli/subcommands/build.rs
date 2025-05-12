@@ -4,8 +4,8 @@ use mlua::{Lua, UserData};
 use std::path::PathBuf;
 
 use crate::assets::INIT_LUA;
-use crate::config::UserEnv;
 use crate::lua::info::PluginInfo;
+use crate::modules::user::UserEnv;
 use crate::{files::find_project_dir, lua::parser::merge_lua_files};
 
 use super::copy::copy_to_plugin_directory;
