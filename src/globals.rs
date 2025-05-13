@@ -6,6 +6,8 @@ use crate::files::find_file_recursively;
 
 pub static TEMPLATE_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/src/assets/pluginframework");
 pub static DEFINITIONS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/src/assets/definitions");
+pub static QPLUG_DIR: &'static str = "qplug/";
+pub static QPLUG_CONFIG: &'static str = ".qplug.lua";
 
 //INFO: This can recurse into the parent dirctory and modify the template `info.lua`. Test from
 //outside this project.

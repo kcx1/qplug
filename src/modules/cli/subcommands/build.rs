@@ -3,7 +3,7 @@ use clap::ValueEnum;
 use mlua::{Lua, UserData};
 use std::path::PathBuf;
 
-use crate::assets::INIT_LUA;
+use crate::globals::INIT_LUA;
 use crate::lua::info::PluginInfo;
 use crate::modules::user::UserEnv;
 use crate::{files::find_project_dir, lua::parser::merge_lua_files};

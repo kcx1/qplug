@@ -1,4 +1,4 @@
-pub mod assets;
+pub mod globals;
 pub mod modules;
 
 pub use modules::cli;

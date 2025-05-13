@@ -7,8 +7,8 @@ use std::path::Path;
 use anyhow::Context;
 
 use crate::{
-    assets::DEFINITIONS_DIR,
     files::{self, copy_dir, create_marker_file},
+    globals::DEFINITIONS_DIR,
     modules::user::get_user_info,
 };
 

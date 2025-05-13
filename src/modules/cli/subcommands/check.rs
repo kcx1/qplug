@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 
-use crate::{config::find_config_file, files::find_project_dir};
+use crate::{config::find_config_file, files::find_project_dir, globals::QPLUG_CONFIG};
 
 #[derive(ValueEnum, Clone, Debug)]
 #[clap(rename_all = "lower")]
@@ -20,7 +20,7 @@ pub fn check(check_option: CheckOption) -> anyhow::Result<()> {
                 None => Ok(println!("Not a Qplug plugin. You may want to try `qplug init` or navigating to a qplug directory.")),
             }
         }
-        CheckOption::Config => match find_config_file() {
+        CheckOption::Config => match find_config_file(QPLUG_CONFIG) {
             Some(f) => Ok(println!("Config file found! {:?}", f)),
             None => Ok(println!(
                 "No config file found. You may want to try `qplug new`"

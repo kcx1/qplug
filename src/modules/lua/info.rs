@@ -165,7 +165,7 @@ impl PluginInfo {
 mod tests {
     use tempfile;
 
-    use crate::assets::INFO_LUA;
+    use crate::globals::INFO_LUA;
 
     use super::*;
 

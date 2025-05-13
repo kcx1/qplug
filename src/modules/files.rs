@@ -150,7 +150,7 @@ pub fn pwd() -> anyhow::Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use crate::assets::TEMPLATE_DIR;
+    use crate::globals::TEMPLATE_DIR;
 
     use super::*;
     use std::fs::{self, File};

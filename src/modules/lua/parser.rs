@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use mlua::{Lua, Table, Value};
 use regex::{Captures, Regex};
 
-use crate::assets::INIT_LUA;
+use crate::globals::INIT_LUA;
 
 pub fn name_table(table_name: &str, table: &str) -> String {
     format!("{} = {}", table_name, table).to_string()

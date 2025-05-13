@@ -1,9 +1,9 @@
-use crate::modules::user::UserConfig;
+use crate::{globals::QPLUG_DIR, modules::user::UserConfig};
 use directories::BaseDirs;
 use mlua::Value::{self};
 use std::{path::PathBuf, str::FromStr};
 
-use crate::assets::TEMPLATE_DIR;
+use crate::globals::TEMPLATE_DIR;
 
 use super::template::Template;
 
@@ -94,27 +94,37 @@ impl Config<'_> {
     }
 }
 
-pub fn find_config_file() -> Option<PathBuf> {
+pub fn find_config_dir() -> Option<PathBuf> {
+    // Check in XDG config directories (Linux, macOS)
+    let base_dirs = BaseDirs::new()?;
+    let config_file = base_dirs.config_dir().join(QPLUG_DIR); // ~/.config on Linux/macOS, AppData/Roaming on Windows
+    if config_file.exists() {
+        return Some(config_file);
+    }
+    None
+}
+
+pub fn find_config_file(file_name: &str) -> Option<PathBuf> {
     fn return_config(config_file: PathBuf) -> Option<PathBuf> {
         if config_file.exists() {
             return Some(config_file);
         }
         None
     }
-    // Check in XDG config directories (Linux, macOS)
     let base_dirs = BaseDirs::new()?;
-    let mut config_file = base_dirs.config_dir().join("qplug/qplug.lua"); // ~/.config on Linux/macOS, AppData/Roaming on Windows
+    // Check in XDG config directories (Linux, macOS)
+    let config_file = find_config_dir()?.join(file_name); // ~/.config on Linux/macOS, AppData/Roaming on Windows
     match return_config(config_file) {
         Some(config) => Some(config),
-        None => {
-            config_file = base_dirs.home_dir().join(".qplug.lua");
-            return_config(config_file)
-        }
+        None => return_config(base_dirs.home_dir().join(file_name)), // If not in the config
+                                                                     // folder set it to the home folder
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::globals::QPLUG_CONFIG;
+
     use super::*;
     use std::fs;
     use tempfile::tempdir;
@@ -122,7 +132,7 @@ mod tests {
     // INFO: This test only works if you don't have a config file in your home directory.
     #[test]
     fn test_find_config_file_none() -> anyhow::Result<()> {
-        let result = find_config_file();
+        let result = find_config_file(QPLUG_CONFIG);
         assert!(result.is_none());
         Ok(())
     }

@@ -7,6 +7,7 @@ use std::{
 };
 
 use crate::config::Config;
+use crate::globals::QPLUG_CONFIG;
 
 use anyhow::Context;
 use mlua::Table;
@@ -66,7 +67,7 @@ impl Index<&'_ str> for UserConfig {
 
 impl UserConfig {
     pub fn new(lua: &Lua) -> anyhow::Result<UserConfig> {
-        let user_config = match find_config_file() {
+        let user_config = match find_config_file(QPLUG_CONFIG) {
             Some(path) => {
                 // Create a function that will return the table form the user config and call it
                 lua.load(fs::read_to_string(&path)?)
