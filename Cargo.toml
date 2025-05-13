@@ -17,6 +17,7 @@ mlua = { version = "0.10.2", features = ["serialize", "lua54", "vendored", "send
 regex = "1.10.5"
 self_update = { version = "0.42.0", features = ["archive-tar", "archive-zip", "compression-flate2", "compression-zip-deflate", "tar", "zip"] }
 serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.140"
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
 
 [dev-dependencies]
