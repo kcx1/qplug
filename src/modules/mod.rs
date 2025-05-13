@@ -4,5 +4,6 @@ pub mod errors;
 pub mod files;
 pub mod git;
 pub mod lua;
+pub mod lua_lsp;
 pub mod template;
 pub mod user;
