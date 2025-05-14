@@ -51,3 +51,15 @@ fn install_definitions() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+fn install_encryption() -> anyhow::Result<()> {
+    let url = "https://github.com/qsys-plugins/PluginEncryptionTool";
+    let tool_path = user_config().join(QPLUG_DIR);
+    let tool = Repository::clone(url, tool_path)
+        .context(format!("Failed to clone template repo: {url}"))?
+        .path()
+        .to_path_buf();
+
+    println!("Encryption Tool has been installed to: {:?}", tool);
+    Ok(())
+}

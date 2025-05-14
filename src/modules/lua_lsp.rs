@@ -7,7 +7,7 @@ use crate::globals::QPLUG_DIR;
 use super::{config::find_config_file, files::user_config};
 
 pub fn get_lua_lsp_file() -> Option<PathBuf> {
-    find_config_file("luarc.json")
+    find_config_file(".luarc.json")
 }
 
 pub fn write_lsp_file() -> anyhow::Result<()> {
@@ -24,10 +24,21 @@ pub fn write_lsp_file() -> anyhow::Result<()> {
 
     let modified_doc = serde_json::to_string_pretty(&luarc)?;
     fs::write(
-        user_config().join(QPLUG_DIR).join("luarc.json"),
+        user_config().join(QPLUG_DIR).join(".luarc.json"),
         modified_doc,
     )?;
 
+    Ok(())
+}
+
+pub fn copy_lsp_file(path: &PathBuf) -> anyhow::Result<()> {
+    let luarc = get_lua_lsp_file();
+    match luarc {
+        Some(file) => {
+            fs::copy(path.join(".luarc.json"), file)?;
+        }
+        None => println!("No .luarc.json file found. Skipping..."),
+    }
     Ok(())
 }
 

@@ -37,13 +37,11 @@ fn main() -> anyhow::Result<()> {
         Some(("new", sub_matches)) => {
             let name = sub_matches.get_one::<String>("Name");
             let no_git = sub_matches.get_one::<bool>("Disable Git").unwrap();
-            let no_defs = sub_matches
-                .get_one::<bool>("Disable Lua Definitions")
-                .unwrap();
+            let no_luarc = sub_matches.get_one::<bool>("Disable luarc").unwrap();
             let no_template = sub_matches
                 .get_one::<bool>("Disable Template Creation")
                 .unwrap();
-            subcommands::new::create_plugin(name, no_git, no_template, no_defs, env)
+            subcommands::new::create_plugin(name, no_git, no_template, no_luarc, env)
                 .context("Failed to create plugin project")
         }
         Some(("build", sub_matches)) => {

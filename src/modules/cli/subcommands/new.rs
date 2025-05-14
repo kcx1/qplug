@@ -1,3 +1,4 @@
+use crate::modules::lua_lsp::{copy_lsp_file, write_lsp_file};
 use crate::modules::template::Template;
 use crate::modules::user::UserEnv;
 use crate::modules::{git::init_git, template::create_template};
@@ -18,7 +19,7 @@ pub fn create_plugin(
     name: Option<&String>,
     no_git: &bool,
     no_template: &bool,
-    local_defs: &bool,
+    no_luarc: &bool,
     user_env: UserEnv,
 ) -> anyhow::Result<()> {
     // Check if name was provided - if not set name to parent directory
@@ -56,13 +57,9 @@ pub fn create_plugin(
         create_template(&plugin_path, &user_env)?
     }
 
-    if *local_defs {
-        add_lua_defs(root_path).context("Failed to create lua definitions.")?;
-        println!("Definitions initialized");
-    } else {
-        //TODO: Write the luals.json file
+    if !no_luarc {
+        copy_lsp_file(&plugin_path)?
     }
-
     // Init git repo
     if !no_git {
         init_git(root_path).context("Failed to init git repo")?;

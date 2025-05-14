@@ -40,8 +40,8 @@ pub fn cli() -> Command {
                         .action(ArgAction::SetTrue),
                 )
                 .arg(
-                    Arg::new("Install a local copy of the Q-Sys Lua Definitions to your repo.")
-                        .long("local-defs")
+                    Arg::new("Disable luarc")
+                        .long("no-luarc")
                         .short('d')
                         .default_value("false")
                         .action(ArgAction::SetTrue),
