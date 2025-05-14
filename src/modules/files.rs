@@ -148,6 +148,20 @@ pub fn pwd() -> anyhow::Result<PathBuf> {
         .context("Failed to get current directory. Please check your permissions.")
 }
 
+pub fn user_home() -> PathBuf {
+    directories::BaseDirs::new()
+        .expect("No valid home directory found")
+        .home_dir()
+        .to_path_buf()
+}
+
+pub fn user_config() -> PathBuf {
+    directories::BaseDirs::new()
+        .expect("No valid home directory found")
+        .config_dir()
+        .to_path_buf()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::globals::TEMPLATE_DIR;

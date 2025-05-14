@@ -1,11 +1,11 @@
-use crate::{globals::QPLUG_DIR, modules::user::UserConfig};
+use crate::{files::user_home, globals::QPLUG_DIR, modules::user::UserConfig};
 use directories::BaseDirs;
 use mlua::Value::{self};
 use std::{path::PathBuf, str::FromStr};
 
 use crate::globals::TEMPLATE_DIR;
 
-use super::template::Template;
+use super::{files::user_config, template::Template};
 
 pub struct Author {
     pub name: Option<String>,
@@ -96,8 +96,7 @@ impl Config<'_> {
 
 pub fn find_config_dir() -> Option<PathBuf> {
     // Check in XDG config directories (Linux, macOS)
-    let base_dirs = BaseDirs::new()?;
-    let config_file = base_dirs.config_dir().join(QPLUG_DIR); // ~/.config on Linux/macOS, AppData/Roaming on Windows
+    let config_file = user_config().join(QPLUG_DIR); // ~/.config on Linux/macOS, AppData/Roaming on Windows
     if config_file.exists() {
         return Some(config_file);
     }
@@ -111,13 +110,12 @@ pub fn find_config_file(file_name: &str) -> Option<PathBuf> {
         }
         None
     }
-    let base_dirs = BaseDirs::new()?;
     // Check in XDG config directories (Linux, macOS)
     let config_file = find_config_dir()?.join(file_name); // ~/.config on Linux/macOS, AppData/Roaming on Windows
     match return_config(config_file) {
         Some(config) => Some(config),
-        None => return_config(base_dirs.home_dir().join(file_name)), // If not in the config
-                                                                     // folder set it to the home folder
+        None => return_config(user_home().join(file_name)), // If not in the config
+                                                            // folder set it to the home folder
     }
 }
 
