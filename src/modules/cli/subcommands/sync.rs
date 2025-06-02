@@ -7,7 +7,7 @@ use tokio_util::codec::{Decoder, Encoder};
 use tokio_util::codec::{Framed, FramedRead, FramedWrite};
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio_stream::StreamExt;
 
@@ -177,16 +177,22 @@ where
     writer.send(payload).await?;
     Ok(writer)
 }
+async fn read_server_messages<T>(mut stream: OwnedReadHalf) -> anyhow::Result<String> {
+    println!("Reading from server");
+    loop {
+        // Create a condition to disconnect
+        let mut read_buf = [0; 1024];
+        // create mutable buffer 1kb
+        // read the buffer
+        let buf_len = stream.read(&mut read_buf).await?;
 
-async fn read_server_messages(socket: TcpStream, codec: JsonRpcCodec) -> anyhow::Result<()> {
-    let mut reader = FramedRead::new(socket, codec);
+        // convert the buffer into a string only using the length of data in the buffer
+        let message = String::from_utf8_lossy(&read_buf[..buf_len]);
 
-    while let Some(frame) = reader.next().await {
-        let msg = frame?;
-        println!("Received: {:?}", msg);
+        println!("{message}");
     }
 
-    Ok(())
+    // Ok(message.into_owned())
 }
 
 #[tokio::main]
@@ -199,10 +205,10 @@ pub async fn sync(script: &PathBuf, config: &PathBuf) -> anyhow::Result<()> {
     let qrs = QRS::new(QRS_PORT, target.cores[0].clone());
 
     // Connect to the stream
-    let (read_stream, write_stream) = qrs.connect().await?.into_split();
+    let connection = qrs.connect().await?;
+    let (read_stream, write_stream) = connection.into_split();
     tokio::spawn(async move {
-        let msg = read_server_messages(read_stream).await;
-        println!("{:?}", msg.unwrap());
+        read_server_messages::<()>(read_stream).await.unwrap();
     });
     //Write Login Payload
     write_server_messages(write_stream, JsonRpcCodec::login(None, None)?).await?;
@@ -212,6 +218,7 @@ pub async fn sync(script: &PathBuf, config: &PathBuf) -> anyhow::Result<()> {
     //     Payload::get_component_controls(target.component.name)?,
     // )
     // .await?;
+    // write_server_messages(write_stream, JsonRpcCodec::noop()?).await?;
 
     Ok(())
 }
