@@ -1,0 +1,15 @@
+{
+    "cores": [
+        {
+            "hostname": "127.0.0.1",
+            "username": "core1",
+            "password": "password"
+        },
+        {
+            "hostname": "Some-HostName"
+        }
+    ],
+    "component": {
+        "name": "SomeComponentName"
+    }
+}
