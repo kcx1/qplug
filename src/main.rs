@@ -78,6 +78,11 @@ fn main() -> anyhow::Result<()> {
                 .unwrap();
             subcommands::check::check(check_option.to_owned())
         }
+        Some(("sync", sub_matches)) => {
+            let script = sub_matches.get_one::<PathBuf>("script").unwrap();
+            let config = sub_matches.get_one::<PathBuf>("config").unwrap();
+            subcommands::sync::sync(script, config)
+        }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
             let mut app = Command::new(APP_NAME);

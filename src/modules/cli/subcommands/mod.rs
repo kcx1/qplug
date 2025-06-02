@@ -5,4 +5,5 @@ pub mod encrypt;
 pub mod init;
 pub mod install;
 pub mod new;
+pub mod sync;
 pub mod update;

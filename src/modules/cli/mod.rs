@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{
     builder::styling, crate_authors, crate_version, value_parser, Arg, ArgAction, ColorChoice,
     Command,
@@ -107,6 +109,21 @@ pub fn cli() -> Command {
                 Arg::new("install")
                     .value_parser(value_parser!(Installables))
                     .action(ArgAction::Set)
+            )
+        )
+        .subcommand(Command::new("sync")
+            .about("Sync a lua script to a QSYS scripting component on a running/emulating core.")
+            .arg(
+                Arg::new("script")
+                    .help("The script that you would like to sync. This should be a lua file.")
+                    .value_parser(clap::value_parser!(PathBuf))
+                    .action(ArgAction::Set)
+
+            )
+            .arg(Arg::new("config")
+                .help("Path to the core config file. This should be a core.json")
+                .value_parser(clap::value_parser!(PathBuf))
+                .action(ArgAction::Set)
             )
         )
         //Generate shell completion
