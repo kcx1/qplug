@@ -1,17 +1,12 @@
 #![allow(dead_code)]
-use bytes::Buf;
-use bytes::{BufMut, BytesMut};
-use std::io;
+
 use std::{io::stdin, path::PathBuf};
-use tokio_util::codec::{Decoder, Encoder};
-use tokio_util::codec::{Framed, FramedRead, FramedWrite};
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
-use tokio_stream::StreamExt;
 
-use anyhow::Context;
+use anyhow::{Context, Ok};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -115,37 +110,6 @@ impl JsonRpcCodec {
     }
 }
 
-impl Decoder for JsonRpcCodec {
-    type Item = Value;
-    type Error = io::Error;
-
-    fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        if let Some(pos) = buf.iter().position(|b| *b == b'\0') {
-            let line = buf.split_to(pos);
-            buf.advance(1); // skip null terminator
-
-            serde_json::from_slice::<Value>(&line)
-                .map(Some)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
-        } else {
-            Ok(None)
-        }
-    }
-}
-
-impl Encoder<Value> for JsonRpcCodec {
-    type Error = io::Error;
-
-    fn encode(&mut self, item: Value, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        let json = serde_json::to_string(&item)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-
-        dst.put(json.as_bytes());
-        dst.put_u8(0); // null terminator
-        Ok(())
-    }
-}
-
 impl QRS {
     ///Creates a new QRS instance
     fn new(port: u16, client: QsysCore) -> Self {
@@ -167,15 +131,14 @@ impl QRS {
     // }
 }
 
-async fn write_server_messages<S>(
-    mut writer: FramedWrite<S, JsonRpcCodec>,
+async fn write_server_messages(
+    mut write_stream: OwnedWriteHalf,
     payload: JsonRpcCodec,
-) -> anyhow::Result<FramedWrite<S, JsonRpcCodec>>
-where
-    S: tokio::io::AsyncWrite + Unpin,
-{
-    writer.send(payload).await?;
-    Ok(writer)
+) -> anyhow::Result<OwnedWriteHalf> {
+    // self.connection = Some(self.connect().await?);
+    println!("Writing to server");
+    write_stream.write_all(payload.format()?.as_bytes()).await?;
+    Ok(write_stream)
 }
 async fn read_server_messages<T>(mut stream: OwnedReadHalf) -> anyhow::Result<String> {
     println!("Reading from server");
