@@ -133,13 +133,20 @@ impl QRS {
 
 async fn write_server_messages(
     mut write_stream: OwnedWriteHalf,
-    payload: JsonRpcCodec,
+    sender: tokio::sync::mpsc::Sender<JsonRpcCodec>,
 ) -> anyhow::Result<OwnedWriteHalf> {
-    // self.connection = Some(self.connect().await?);
+    loop {
+        let payload = match sender.recv().await {
+            Ok(payload) => payload,
+            Err(_) => break,
+        };
+    }
     println!("Writing to server");
+    // self.connection = Some(self.connect().await?);
     write_stream.write_all(payload.format()?.as_bytes()).await?;
     Ok(write_stream)
 }
+
 async fn read_server_messages<T>(mut stream: OwnedReadHalf) -> anyhow::Result<String> {
     println!("Reading from server");
     loop {
@@ -152,7 +159,9 @@ async fn read_server_messages<T>(mut stream: OwnedReadHalf) -> anyhow::Result<St
         // convert the buffer into a string only using the length of data in the buffer
         let message = String::from_utf8_lossy(&read_buf[..buf_len]);
 
-        println!("{message}");
+        if message.len() > 1 {
+            println!("{message}");
+        }
     }
 
     // Ok(message.into_owned())
@@ -182,6 +191,11 @@ pub async fn sync(script: &PathBuf, config: &PathBuf) -> anyhow::Result<()> {
     // )
     // .await?;
     // write_server_messages(write_stream, JsonRpcCodec::noop()?).await?;
+    //
+
+    // Wait for a termination signal to close the connection gracefully.
+    tokio::signal::ctrl_c().await?;
+    println!("Received Ctrl+C, closing connection...");
 
     Ok(())
 }
