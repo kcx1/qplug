@@ -1,10 +1,9 @@
 {
-    "cores": [
-        {
-            "hostname": "10.8.0.2"
-        }
-    ],
+    "core": {
+        "hostname": "10.8.0.3"
+    }
+    ,
     "component": {
-        "name": "gain"
+        "name": "TestController"
     }
 }
