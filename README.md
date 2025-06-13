@@ -3,6 +3,22 @@ Cargo inspired CLI for Q-SYS plugin development.
 
 This tool aims to make developing Q-SYS plugins easier by combining different tools into a single command line interface.
 
+** New Stuff:**
+Here's a brief list of new stuff in 0.4.0:
+
+- Definitions for Q-SYS Extensions to LuaLS are no longer embedded in the binary! But you can install them separately using the new install command. You can now find them at: [Q-SYS-LuaLS-Definitions](https://github.com/kcx1/Q-SYS-LuaLS-Definitions)
+    - As the scope of qplug grows, it's important to be able to update portions like the definitions without having to rebuild the binary. This also provides an entry point to be able to install and manage new tools in the future.
+- Sync Command!
+    - Sync files from your IDE to Q-SYS controls.
+- Install Command!
+    - Install helper tools for Q-Plug (Including the previously included definitions)
+    - Install the QSC encryption tool to encrypt your Q-SYS plugins.
+    - Install the legacy build tool developed by the Q-SYS team in order to support older plugins.
+- Encryption Tool!
+    - Wrapper command to leverage the official Q-SYS encryption tool.
+    - NOTE: You do need to install the encryption tool first!
+
+
 **Features:**
 - ✨ Create new projects with ease!
     - Template based creation - Bring your own template or use the built-in one 🎉
@@ -18,6 +34,11 @@ This tool aims to make developing Q-SYS plugins easier by combining different to
 - Auto Shell Completion :pencil2:
 - Self Updating :shipit:
 - Cross Platform 🔀
+- Install and use Encryption tool :lock:
+- Sync files from your IDE to regular scripting controls within Q-SYS. 󰓦
+    - One shot - Sync the current file to Q-SYS
+    - Watch mode - Sync the current file to Q-SYS and watch for changes. :eyes:
+    - Specify multiple controls to sync various files at once.
 
 ## Installation:
 
@@ -87,8 +108,9 @@ Commands:
   build    Build and complie the plugin.
   update   Update the qplug utility to the latest version.
   copy     Copy the plugin to the plugin folder.
-  compile  Complie the plugin. Do not increment versioning or copy to plugin folder.
   check    check if current directory is a valid plugin.
+  install  Install helper
+  sync     Sync a lua script to a Q-SYS scripting component on a running/emulating core
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -149,22 +171,16 @@ Arguments:
   [Increment Build Version]  [default: dev] [possible values: dev, patch, minor, major]
 
 Options:
-  -h, --help  Print help
+  -c, --copy_to <Path to copy>
+      --build_only             Build only. Do not update plugin info or copy to plugin directory
+  -h, --help                   Print help
 ```
 
-##### Compile a plugin
+There are a couple of options that you can pass to the build command. 
 
-This will compile a `.qplug` file based on the contents of the Lua files within the `plugin_src` directory.
-By default, it will use the builtin build tool. However, you can specify your own within the config file. [config](#global-configuration-file)
+    -c, --copy_to: This will copy the plugin to the specified path. This is especiallly useful if you are building on an OS other than Windows and would like to copy to a VM or some other location. If you don't provide a path, it will copy the plugin to the qplug plugin folder.
 
-```help
-Compile the plugin. Do not increment versioning or copy to plugin folder.
-
-Usage: qplug compile
-
-Options:
-  -h, --help  Print help
-```
+    --build_only: This will only build the plugin. It will not update the plugin info or copy it to the plugin folder. This option replaces the deprecated compile command.
 
 ##### Copy the plugin to the plugin folder
 This will copy the plugin to the Q-SYS plugin folder.
@@ -191,6 +207,27 @@ Options:
   -h, --help     Print help
 ```
 
+##### Install
+This command will allow you to install various helper tools.
+
+> [!IMPORTANT]
+> As of 0.4.0 the definitions will no longer be embedded in the binary. You will need to install them separately.
+
+The install command will allow you to install external tools to be used by qplug. Each of these tools will be installed to the user's config directory and will display the path of the tool for convenience.
+
+
+```help
+Install helper
+
+Usage: qplug install
+
+Arguments:
+  [install]  [possible values: definitions, encryption, legacybuild]
+
+Options:
+  -h, --help  Print help
+```
+
 ##### Update Q-plug
 Have Q-Plug update itself to the latest version so you don't have to worry about downloading new binaries and updating your path. 
 
@@ -209,9 +246,82 @@ to force update.
 
 You can configure various aspects of Q-Plug using the following commands and files.
 
-#### Global configuration file
 
-You may have multiple projects that require different settings. One way to accomplish this is by defining your own global configuration file. You can store this in either `~/.config/qplug/qplug.lua` or by adding a `.qplug.lua` file directly in your home directory.
+##### Sync
+Sync local lua files with Q-SYS scripting components.
+
+Okay, okay, so this isn't really plugin management, but it seems like a great addition to the tool and will enhance the workflow.
+
+Simply write a json file(default: `core.json`) and populate it with the following information:
+
+
+```json
+{
+    "core": {
+            "hostname": "127.0.0.1",
+            "username": "core1",
+            "password": "password",
+            "components": [
+                {
+                    "name": "SomeComponentName",
+                    "script": "Some/Nested/Path/To/SomeComponentName.lua"
+                }
+            ]
+        },
+}
+```
+
+For your convenience, there is also schema in the configuration_example directory of this repo.
+
+There are a few things to note here:
+
+- The username and password are only required if you have them setup on the core, and they are the same as the ones you use to log into Q-SYS
+- The hostname is the IP address or hostname of the core. This can be found in the Q-SYS configuration page.
+- The components are the names of the components you want to sync.
+- If you provide a script path for a component, it will be used to sync the file with the component. This can be an absolute path or a relative path to the path passed as an argument to the install command. If you don't specify a script, it will use the same script name as the component name relative to the path you pass as an argument.
+- You can have multiple components in the `core.json` file, but only one core. 
+- You have to use the `.lua` extension for the script name that you want to sync.  
+
+>[!IMPORTANT]
+> You **MUST** enable external script access for any of the Q-SYS scripting components you want to sync. The control name needs to be the component name provided in the `core.json` file.
+
+
+BTW - This is all asynchronous. And will leverage your computer's processing cores to watch files, read from TCP socket, and write back to the TCP socket completely parallel! 😏 thanks rust! 🦀
+
+
+```help
+Sync a lua script to a Q-SYS scripting component on a running/emulating core
+
+Usage: qplug sync [OPTIONS] [script] [config]
+
+Arguments:
+  [script]  The parent directory of the script to sync. 
+  [config]  Path to the core configuration file. [default: core.json]
+
+Options:
+  -w  --watch If this is set, the specified scripts will be watched for changes. and will sync any changes to the core. 
+  -h, --help  Print help
+```
+
+>[!TIP]
+> If you launch the sync command with the watch option, you can cancel it at any time by pressing `CTRL + C`.
+
+>[!TIP]
+> You can also use some bash tricks to run the sync command in the background. For example: `qplug sync some/script/path -w &` or after running it `CTRL + Z` to pause the task and then `bg` to put it in the background. Once in the background, you can `fg` to bring it back to the foreground.
+
+>[!TIP]
+> The sync command understands the `.` as current directory. So you can create your file system like this: 
+> ```
+>SomeProjectDir
+>    ├── core.json
+>    ├── AnotherController.lua
+>    └── FirstController.lua
+> ```
+>Now, simply navigate the `SomeProjectDir`  and there's no need to specify the script path for your components as long as your component names match your file names. You can just call qplug like this: `qplug sync .` or `qplug sync . -w`
+
+#### Global and Local configuration files
+
+You may have multiple projects that require different settings. You can start with a nice global configuration file that has sane default settings for your workflow. Just put the file in `~/.config/qplug/qplug.lua` or directly in your home directory.  `~/.qplug.lua`
 
 Here's an example:
 ```lua
@@ -242,6 +352,8 @@ return {
     end,
 }
 ```
+
+
 
 ## Contributing
 Contributions to Q-Plug are welcome! Please follow standard coding practices and ensure that any changes do not break existing functionality.

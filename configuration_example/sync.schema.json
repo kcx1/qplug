@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "core": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "component": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "script": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "hostname",
+        "component"
+      ]
+    }
+  },
+  "required": [
+    "core"
+  ]
+}
+
+
