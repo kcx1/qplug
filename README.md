@@ -271,7 +271,7 @@ Simply write a json file(default: `core.json`) and populate it with the followin
 }
 ```
 
-For your convenience, there is also schema in the configuration_example directory of this repo.
+For your convenience, there is also schema in the doc directory of this repo.
 
 There are a few things to note here:
 

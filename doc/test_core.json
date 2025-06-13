@@ -1,0 +1,17 @@
+{
+    "core": {
+        "hostname": "10.8.0.2",
+        "components": [ 
+            {
+                "name": "TestController",
+                "script": "/home/casey/Projects/MusicUploader/client/websocket.lua"
+            },
+            {
+                "name": "AnotherController"
+            },
+            {
+                "name": "FirstController"
+            }
+        ]
+    }
+}

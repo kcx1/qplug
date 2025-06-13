@@ -1,9 +1,0 @@
-{
-    "core": {
-        "hostname": "10.8.0.3"
-    }
-    ,
-    "component": {
-        "name": "TestController"
-    }
-}
