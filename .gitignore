@@ -6,3 +6,6 @@
 # Python Testing
 /.ropeproject
 /.mypy_cache
+
+# Scatch Folder
+/scratch

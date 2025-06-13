@@ -1,15 +1,13 @@
 {
-    "cores": [
-        {
+    "core": {
             "hostname": "127.0.0.1",
             "username": "core1",
-            "password": "password"
+            "password": "password",
+            "components": [
+                {
+                    "name": "SomeComponentName",
+                    "script": "Some/Nested/Path/To/SomeComponentName.lua"
+                }
+            ]
         },
-        {
-            "hostname": "Some-HostName"
-        }
-    ],
-    "component": {
-        "name": "SomeComponentName"
-    }
 }

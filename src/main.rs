@@ -1,5 +1,5 @@
 use anyhow::Context;
-use clap::Command;
+use clap::{ArgMatches, Command};
 use clap_complete::{generate, Shell};
 use mlua::Lua;
 use qplug::cli::{self, subcommands};
@@ -31,7 +31,7 @@ fn main() -> anyhow::Result<()> {
         config: &config,
     };
 
-    let matches = cli::cli().get_matches();
+    let matches: ArgMatches = cli::cli().get_matches();
 
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
@@ -81,7 +81,8 @@ fn main() -> anyhow::Result<()> {
         Some(("sync", sub_matches)) => {
             let script = sub_matches.get_one::<PathBuf>("script").unwrap();
             let config = sub_matches.get_one::<PathBuf>("config").unwrap();
-            subcommands::sync::sync(script, config)
+            let is_watched = sub_matches.get_flag("is_watched");
+            subcommands::sync::sync(script, config, is_watched)
         }
         Some(("completions", sub_matches)) => {
             let shell = sub_matches.get_one::<Shell>("shell").unwrap();
