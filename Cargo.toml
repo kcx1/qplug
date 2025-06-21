@@ -1,3 +1,6 @@
+[build]
+rustflags = ["--cfg", "tokio_unstable"]
+
 [package]
 name = "qplug"
 version = "0.4.0"
@@ -12,6 +15,7 @@ async-watcher = "0.3.0"
 bytes = "1.10.1"
 clap = { version = "4.5.11", features = ["derive", "help", "cargo", "color"]}
 clap_complete = "4.5.13"
+console-subscriber = "0.4.1"
 directories = "6.0.0"
 git2 = { version = "0.20.0", features = ["vendored-openssl", "https", "ssh"] }
 include_dir = "0.7.4"
@@ -21,9 +25,11 @@ regex = "1.10.5"
 self_update = { version = "0.42.0", features = ["archive-tar", "archive-zip", "compression-flate2", "compression-zip-deflate", "tar", "zip"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.140"
-tokio = { version = "1.45.1", features = ["full", "sync"] }
+tokio = { version = "1.45.1", features = ["full", "sync", "tracing"] }
 tokio-util = { version = "0.7.15", features = ["codec"] }
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
 
 [dev-dependencies]
 tempfile = "3.10.1"
+
+

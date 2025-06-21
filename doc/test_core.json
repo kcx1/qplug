@@ -1,7 +1,7 @@
 {
     "core": {
-        "hostname": "10.8.0.2",
-        "components": [ 
+        "hostname": "192.168.50.179",
+        "components": [
             {
                 "name": "TestController",
                 "script": "/home/casey/Projects/MusicUploader/client/websocket.lua"
