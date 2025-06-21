@@ -3,19 +3,19 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct JsonRpcCodec {
+pub struct QrcMessage {
     pub jsonrpc: String,
     pub method: String,
     pub params: Map<String, Value>,
     pub id: u16,
 }
 
-impl JsonRpcCodec {
+impl QrcMessage {
     pub fn new(method: String, params: Map<String, Value>) -> Self {
         let jsonrpc = String::from("2.0");
         let mut rng = rand::rng();
         let id: u16 = rng.random();
-        JsonRpcCodec {
+        QrcMessage {
             jsonrpc,
             method,
             params,
@@ -24,10 +24,7 @@ impl JsonRpcCodec {
     }
 
     ///Login to the QSYS server. Provide username and password if needed
-    pub fn login(
-        username: Option<String>,
-        password: Option<String>,
-    ) -> anyhow::Result<JsonRpcCodec> {
+    pub fn login(username: Option<String>, password: Option<String>) -> anyhow::Result<QrcMessage> {
         let mut parameters = Map::new();
         if let Some(username) = username {
             parameters.insert("User".to_string(), serde_json::Value::String(username));
@@ -35,26 +32,26 @@ impl JsonRpcCodec {
         if let Some(password) = password {
             parameters.insert("Password".to_string(), serde_json::Value::String(password));
         }
-        Ok(JsonRpcCodec::new(String::from("Logon"), parameters))
+        Ok(QrcMessage::new(String::from("Logon"), parameters))
     }
 
     ///Send a no op to the server. MUST be sent every 60 seconds to keep the session alive
-    pub fn noop() -> anyhow::Result<JsonRpcCodec> {
-        Ok(JsonRpcCodec::new(String::from("NoOp"), Map::new()))
+    pub fn noop() -> anyhow::Result<QrcMessage> {
+        Ok(QrcMessage::new(String::from("NoOp"), Map::new()))
     }
 
     ///Get component methods for a given component
-    pub fn get_component_controls(componet_name: &str) -> anyhow::Result<JsonRpcCodec> {
+    pub fn get_component_controls(componet_name: &str) -> anyhow::Result<QrcMessage> {
         let mut parameters = Map::new();
 
         parameters.insert("Name".into(), componet_name.into());
-        Ok(JsonRpcCodec::new(
+        Ok(QrcMessage::new(
             String::from("Component.GetControls"),
             parameters,
         ))
     }
 
-    pub async fn update_code(component_name: &str, code: String) -> anyhow::Result<JsonRpcCodec> {
+    pub async fn update_code(component_name: &str, code: String) -> anyhow::Result<QrcMessage> {
         let mut parameters = Map::new();
         let mut controls = Map::new();
 
@@ -66,7 +63,7 @@ impl JsonRpcCodec {
         parameters.insert("Name".into(), component_name.into());
         parameters.insert("Controls".into(), vec![controls].into());
 
-        Ok(JsonRpcCodec::new(String::from("Component.Set"), parameters))
+        Ok(QrcMessage::new(String::from("Component.Set"), parameters))
     }
 
     ///Format a JsonRpcCodec into a json string for sending
@@ -124,7 +121,7 @@ impl ServerReply {
     }
 }
 
-pub fn handle_server_reply(reply: &ServerReply) {
+pub fn handle_server_reply(reply: ServerReply) {
     match reply {
         ServerReply::Ack(ref r) => {
             // Handle the JsonRpcServerReply variant
