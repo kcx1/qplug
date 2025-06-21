@@ -114,8 +114,8 @@ pub fn cli() -> Command {
         .subcommand(Command::new("sync")
             .about("Sync a lua script to a QSYS scripting component on a running/emulating core.")
             .arg(
-                Arg::new("script")
-                    .help("The script that you would like to sync. This should be a lua file.")
+                Arg::new("Directory")
+                    .help("The directory that you would like to sync from. All relative paths will be resolved relative to this directory.")
                     .value_parser(clap::value_parser!(PathBuf))
                     .action(ArgAction::Set)
 
@@ -132,6 +132,13 @@ pub fn cli() -> Command {
                 .default_value("false")
                 .short('w')
                 .long("watch")
+            )
+            .arg(Arg::new("verbose")
+                .help("Print out verbose data from the stream.")
+                .action(ArgAction::SetTrue)
+                .default_value("false")
+                .short('v')
+                .long("verbose")
             )
         )
         //Generate shell completion
