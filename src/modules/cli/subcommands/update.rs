@@ -1,7 +1,32 @@
+use clap::ValueEnum;
 use self_update::backends::github;
 use self_update::cargo_crate_version;
 
-pub fn update(version: &Option<&str>) -> anyhow::Result<()> {
+#[derive(ValueEnum, Clone, Debug)]
+pub enum Updatable {
+    SelfUpdate,
+    Encryption,
+    LegacyBuild,
+    Definitions,
+    All,
+}
+
+pub fn update(updatable: &Updatable, version: &Option<&str>) -> anyhow::Result<()> {
+    match updatable {
+        Updatable::SelfUpdate => self_update(version),
+        //TODO: Update all of the update functions; Should just be a git pull, but need to check if
+        //actually installed first
+        Updatable::Definitions => {
+            todo!("Create an update function for definitions")
+        }
+        Updatable::Encryption => todo!(),
+        Updatable::LegacyBuild => todo!(),
+        Updatable::All => todo!(),
+    }?;
+    Ok(())
+}
+
+pub fn self_update(version: &Option<&str>) -> anyhow::Result<()> {
     // Create a builder for the update
     let mut status = github::UpdateBuilder::new();
 

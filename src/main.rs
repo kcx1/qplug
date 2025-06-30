@@ -61,8 +61,8 @@ fn main() -> anyhow::Result<()> {
         }
         Some(("update", sub_matches)) => {
             let version: Option<&str> = sub_matches.get_one("Version").map(|x: &String| x.as_str());
-
-            subcommands::update::update(&version).context("Could not update Q-Plug")
+            let update_content = sub_matches.get_one("Update Content").unwrap();
+            subcommands::update::update(update_content, &version).context("Could not update Q-Plug")
         }
         Some(("copy", sub_matches)) => {
             let default_dir = env.config.plugin_dir.clone().unwrap();

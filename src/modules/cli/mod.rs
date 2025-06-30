@@ -7,6 +7,8 @@ use clap::{
 use clap_complete::Shell;
 use subcommands::{build::VersionType, check::CheckOption, install::Installables};
 
+use crate::cli::subcommands::update::Updatable;
+
 pub mod subcommands;
 
 const STYLES: styling::Styles = styling::Styles::styled()
@@ -80,6 +82,12 @@ pub fn cli() -> Command {
         .subcommand(
             Command::new("update")
                 .about("Update the qplug utility to the latest version.")
+                .arg(
+                    Arg::new("Update Option")
+                        .value_parser(value_parser!(Updatable))
+                        .ignore_case(true)
+                        .default_value("self_update")
+                )
                 .arg(
                     Arg::new("Version")
                         .long("version")
