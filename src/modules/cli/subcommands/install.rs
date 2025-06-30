@@ -1,3 +1,5 @@
+use std::array;
+
 use anyhow::Context;
 use clap::ValueEnum;
 use git2::Repository;
@@ -10,6 +12,19 @@ pub enum Installables {
     Definitions,
     Encryption,
     LegacyBuild,
+    All,
+}
+
+impl Installables {
+    fn into_iter() -> array::IntoIter<Installables, 3> {
+        // NOTE: If adding new installables, make sure to add them here too!
+        [
+            Installables::Definitions,
+            Installables::Encryption,
+            Installables::LegacyBuild,
+        ]
+        .into_iter()
+    }
 }
 
 impl std::fmt::Display for Installables {
@@ -18,6 +33,7 @@ impl std::fmt::Display for Installables {
             Installables::Definitions => println!("{:?}", Installables::Definitions),
             Installables::Encryption => println!("{:?}", Installables::Encryption),
             Installables::LegacyBuild => println!("{:?}", Installables::LegacyBuild),
+            Installables::All => println!("{:?}", Installables::All),
         };
         Ok(())
     }
@@ -26,14 +42,19 @@ impl std::fmt::Display for Installables {
 pub fn install(installable: Option<&Installables>) -> anyhow::Result<()> {
     if let Some(installable) = installable {
         match installable {
-            Installables::Definitions => install_definitions()?,
-            Installables::Encryption => install_encryption()?,
-            Installables::LegacyBuild => install_legacy_build()?,
-        };
-    };
-    match installable {
-        Some(thing) => Ok(println!("{thing}")),
-        None => Ok(println!("Nothing")),
+            Installables::Definitions => install_definitions(),
+            Installables::Encryption => install_encryption(),
+            Installables::LegacyBuild => install_legacy_build(),
+            Installables::All => {
+                for thing in Installables::into_iter() {
+                    install(Some(&thing))?
+                }
+                Ok(())
+            }
+        }
+    } else {
+        // If installable is not provided throw an error
+        Err(anyhow::Error::msg("Failed to install"))
     }
 }
 
